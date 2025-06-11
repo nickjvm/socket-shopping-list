@@ -1,103 +1,101 @@
-import Image from "next/image";
+"use client";
+import { Fragment, useState } from "react";
+import ThemeSwitch from "./components/ThemeSwitch";
+import { useShoppingList } from "./providers";
+import Item from "./components/Item";
+import { TbWindowMaximize } from "react-icons/tb";
+import DetailsModal, { DetailsModalProps } from "./components/DetailsModal";
+import SettingsDropdown from "./components/SettingsDropdown";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { items, addItem } = useShoppingList();
+  const [modalContext, setModalContext] = useState<
+    DetailsModalProps["data"] | null
+  >(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const itemsByCategory = items.reduce((acc, item: Item) => {
+    // if (!item.category) {
+    //   item.category = "Other"; // Default category if none is provided
+    // }
+    if (!acc[item.category || "Other"]) {
+      acc[item.category || "Other"] = [];
+    }
+    acc[item.category || "Other"].push(item);
+    return acc;
+  }, {} as Record<string, Item[]>);
+
+  return (
+    <div className="flex flex-col h-screen">
+      <div className="flex justify-between items-center p-4">
+        <h1 className="text-2xl font-bold">Shopping List</h1>
+        <SettingsDropdown />
+      </div>
+      <ul className="grow overflow-auto px-4">
+        {Object.keys(itemsByCategory).map((category) => (
+          <Fragment key={category}>
+            <li>
+              <h2 className="text-xl font-bold">{category}</h2>
+              <ul className="mb-2">
+                {itemsByCategory[category].map((item) => (
+                  <Item
+                    item={item}
+                    key={item.id}
+                    onExpand={() =>
+                      setModalContext({
+                        mode: "edit",
+                        item,
+                      })
+                    }
+                  />
+                ))}
+              </ul>
+            </li>
+          </Fragment>
+        ))}
+      </ul>
+      <form
+        className="mt-auto gap-2 flex p-4 border-t border-slate-300"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const itemName = formData.get("item") as string;
+          if (!itemName) return;
+          addItem({ name: itemName });
+          (e.target as HTMLFormElement).reset();
+        }}
+      >
+        <input
+          type="text"
+          name="item"
+          autoFocus
+          autoComplete="off"
+          autoCorrect="off"
+          placeholder="Add an item..."
+          className="border border-gray-500 rounded w-full px-4 py-2 dark:bg-slate-800"
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            const formData = new FormData(e.currentTarget.form!);
+            const itemName = formData.get("item") as string;
+            setModalContext({
+              mode: "add",
+              item: {
+                name: itemName,
+              } as Item,
+            });
+          }}
+          className="p-2 rounded bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 cursor-pointer"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <TbWindowMaximize className="w-6 h-6" />
+        </button>
+      </form>
+      {modalContext && (
+        <DetailsModal
+          onClose={() => setModalContext(null)}
+          data={modalContext}
+        />
+      )}
     </div>
   );
 }

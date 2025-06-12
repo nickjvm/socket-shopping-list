@@ -3,8 +3,6 @@
 
 import { ThemeProvider } from "next-themes";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { categorizeItem } from "./actions/example";
-import { openDB } from "idb";
 
 import { socket } from "@/socket";
 export function Providers({ children }: { children: React.ReactNode }) {

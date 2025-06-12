@@ -1,9 +1,10 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useTheme } from "next-themes";
-import { FiMoon, FiSun } from "react-icons/fi";
+import { FiMoon, FiPlusSquare, FiSun } from "react-icons/fi";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import { useShoppingList } from "../providers";
+import Link from "next/link";
 
 export default function SettingsDropdown() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -20,6 +21,14 @@ export default function SettingsDropdown() {
           anchor="bottom end"
           className="dark:bg-slate-600 origin-top-right rounded-xl border  border-white/5 bg-black/5 p-1 text-sm/6 dark:text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
         >
+          <MenuItem
+            as={Link}
+            href="/"
+            className="cursor-pointer justify-end group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
+          >
+            <FiPlusSquare />
+            New List
+          </MenuItem>
           <MenuItem>
             <button
               className="cursor-pointer justify-end group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"

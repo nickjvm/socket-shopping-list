@@ -1,4 +1,8 @@
+"use server";
+
+import { v4 as uuid } from "uuid";
 import { createClient } from "@libsql/client";
+import { redirect } from "next/navigation";
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL!,
@@ -12,6 +16,16 @@ export async function fetchListItems(listId: string) {
   });
 
   return JSON.parse(JSON.stringify(result.rows)) as Item[];
+}
+
+export async function createList(formData: FormData) {
+  const id = uuid();
+  await client.execute({
+    sql: "INSERT INTO lists (id, name) VALUES (?, ?)",
+    args: [id, formData.get("name") as string],
+  });
+
+  redirect(`/${id}`);
 }
 
 export async function fetchList(listId: string) {
@@ -42,4 +56,23 @@ export async function fetchList(listId: string) {
     name: result.rows[0].name as string,
     items: JSON.parse((result.rows[0].items as string) || "[]") as Item[],
   };
+}
+
+export async function fetchLists(listIds: string[]) {
+  if (listIds.length === 0) return [];
+
+  const placeholders = listIds.map(() => "?").join(",");
+  const result = await client.execute({
+    sql: `
+            SELECT lists.id, lists.name
+            FROM lists
+            WHERE lists.id IN (${placeholders})
+    `,
+    args: listIds,
+  });
+
+  return JSON.parse(JSON.stringify(result.rows)) as {
+    id: string;
+    name: string;
+  }[];
 }

@@ -17,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 type ShoppingListContextType = {
   items: Item[];
+  connectToList: (listId: string) => void;
   addItem: (item: PartialWithRequired<Item, "name">) => void;
   toggleItem: (id: string) => void;
   updateItem: (item: Item) => void;
@@ -42,6 +43,10 @@ export const ShoppingListProvider = ({
   const renderedItems = showCompleted
     ? items
     : items.filter((item) => !item.dateCompleted);
+
+  function connectToList(listId: string) {
+    socket.emit("list:connect", listId);
+  }
 
   useEffect(() => {
     if (socket.connected) {
@@ -201,6 +206,7 @@ export const ShoppingListProvider = ({
     <ShoppingListContext.Provider
       value={{
         items: renderedItems,
+        connectToList,
         addItem,
         toggleItem,
         removeItem,

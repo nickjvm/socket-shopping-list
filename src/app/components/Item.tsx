@@ -1,6 +1,6 @@
 import cn from "@/utils/cn";
 import { useShoppingList } from "../providers";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 
 type ItemProps = {
@@ -26,11 +26,18 @@ export default function Item({ item, onExpand }: ItemProps) {
     } else {
       setPendingCompletion(true);
       timeout.current = setTimeout(() => {
-        setPendingCompletion(false);
         completeItem(id);
       }, 5000);
     }
   };
+
+  useEffect(() => {
+    if (dateCompleted) {
+      setPendingCompletion(false);
+      clearTimeout(timeout.current!);
+      timeout.current = null;
+    }
+  }, [dateCompleted]);
 
   return (
     <li

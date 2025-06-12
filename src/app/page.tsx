@@ -1,11 +1,11 @@
 "use client";
-import { Fragment, useState } from "react";
-import ThemeSwitch from "./components/ThemeSwitch";
+import { Fragment, useState, useEffect } from "react";
 import { useShoppingList } from "./providers";
 import Item from "./components/Item";
 import { TbWindowMaximize } from "react-icons/tb";
 import DetailsModal, { DetailsModalProps } from "./components/DetailsModal";
 import SettingsDropdown from "./components/SettingsDropdown";
+import { socket } from "@/socket";
 
 export default function Home() {
   const { items, addItem } = useShoppingList();
@@ -13,10 +13,10 @@ export default function Home() {
     DetailsModalProps["data"] | null
   >(null);
 
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
+
   const itemsByCategory = items.reduce((acc, item: Item) => {
-    // if (!item.category) {
-    //   item.category = "Other"; // Default category if none is provided
-    // }
     if (!acc[item.category || "Other"]) {
       acc[item.category || "Other"] = [];
     }
@@ -24,10 +24,41 @@ export default function Home() {
     return acc;
   }, {} as Record<string, Item[]>);
 
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      setTransport(socket.io.engine.transport.name);
+
+      socket.onAny(console.log);
+      socket.io.engine.on("upgrade", (transport) => {
+        setTransport(transport.name);
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
   return (
     <div className="flex flex-col h-screen">
       <div className="flex justify-between items-center p-4">
-        <h1 className="text-2xl font-bold">Shopping List</h1>
+        <h1 className="text-2xl font-bold">
+          Shopping List ({isConnected ? "connected" : "disconnected"}{" "}
+          {transport}){" "}
+        </h1>
         <SettingsDropdown />
       </div>
       <ul className="grow overflow-auto px-4">

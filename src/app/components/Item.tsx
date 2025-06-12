@@ -47,11 +47,11 @@ export default function Item({ item, onExpand }: ItemProps) {
         name={id}
         onChange={handleToggle}
         className="mt-[5.5px]"
-        defaultChecked={!!dateCompleted}
+        checked={!!dateCompleted || isPendingCompletion}
       />
       <label className="sr-only">Mark {name} completed</label>
       <div className="grow flex gap-x-1 flex-wrap">
-        <div className="flex items-center gap-1 flex-nowrap">
+        <div className="flex items-center gap-1 flex-nowrap w-full">
           <div
             contentEditable
             suppressContentEditableWarning

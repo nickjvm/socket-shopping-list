@@ -3,9 +3,10 @@
 
 import { ThemeProvider } from "next-themes";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { v4 as uuid } from "uuid";
 import { categorizeItem } from "./actions/example";
 import { openDB } from "idb";
+
+import { socket } from "@/socket";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -41,60 +42,114 @@ export const ShoppingListProvider = ({
   const renderedItems = showCompleted
     ? items
     : items.filter((item) => !item.dateCompleted);
+
   useEffect(() => {
-    if (!items.length) {
-      getDB().then((db) => {
-        const tx = db.transaction("items", "readonly");
-        const store = tx.objectStore("items");
-        const index = store.index("dateAdded");
-        index.getAll().then((storedItems: Item[]) => {
-          if (storedItems) {
-            setItems(storedItems);
-          }
-        });
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      socket.emit("hello");
+      socket.on("items:retrieved", setItems);
+      socket.on("item:added", (item: Item) => {
+        setItems((prev) => [...prev, item]);
       });
-      // getDB().then((db) => {
-      //   db.getAll("items").then((storedItems: Item[]) => {
-      //     setItems(storedItems);
-      //   });
-      // });
-    } else {
-      // console.log("updating items in DB", items);
-      getDB().then((db) => {
-        db.clear("items").then(() => {
-          items.forEach((item) => db.put("items", item));
-        });
+
+      socket.on("item:completed", (itemId: string) => {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId ? { ...item, dateCompleted: Date.now() } : item
+          )
+        );
+      });
+      socket.on("item:uncompleted", (itemId: string) => {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId ? { ...item, dateCompleted: null } : item
+          )
+        );
+      });
+      socket.on("item:deleted", (itemId: string) => {
+        setItems((prev) => prev.filter((item) => item.id !== itemId));
+      });
+
+      socket.on("item:updated", (item: Item) => {
+        setItems((prev) =>
+          prev.map((prevItem) =>
+            prevItem.id === item.id ? { ...prevItem, ...item } : prevItem
+          )
+        );
       });
     }
+
+    function onDisconnect() {
+      console.log("Disconnected from socket");
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
+
+  useEffect(() => {
+    // if (!items.length) {
+    //   getDB().then((db) => {
+    //     const tx = db.transaction("items", "readonly");
+    //     const store = tx.objectStore("items");
+    //     const index = store.index("dateAdded");
+    //     index.getAll().then((storedItems: Item[]) => {
+    //       if (storedItems) {
+    //         setItems(storedItems);
+    //       }
+    //     });
+    //   });
+    //   // getDB().then((db) => {
+    //   //   db.getAll("items").then((storedItems: Item[]) => {
+    //   //     setItems(storedItems);
+    //   //   });
+    //   // });
+    // } else {
+    //   // console.log("updating items in DB", items);
+    //   getDB().then((db) => {
+    //     db.clear("items").then(() => {
+    //       console.log(items);
+    //       items.forEach((item) => db.put("items", item));
+    //     });
+    //   });
+    // }
   }, [items]);
 
-  async function categorize(item: Item) {
-    if (item.category) {
-      return;
-    }
+  // async function categorize(item: Item) {
+  //   if (item.category) {
+  //     return;
+  //   }
 
-    const category = (await categorizeItem(item.name)) || "Other";
+  //   const category = (await categorizeItem(item.name)) || "Other";
 
-    setItems((prev) =>
-      prev.map((prevItem) =>
-        prevItem.id === item.id ? { ...item, category } : prevItem
-      )
-    );
-    const db = await getDB();
-    await db.put("items", { ...item, category });
-  }
+  //   setItems((prev) =>
+  //     prev.map((prevItem) =>
+  //       prevItem.id === item.id ? { ...item, category } : prevItem
+  //     )
+  //   );
+  //   const db = await getDB();
+  //   await db.put("items", { ...item, category });
+  // }
 
   // Helper to get the DB instance
-  const getDB = async () => {
-    return openDB("shopping-list-db", 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains("items")) {
-          const store = db.createObjectStore("items", { keyPath: "id" });
-          store.createIndex("dateAdded", "dateAdded"); // Create index on dateAdded
-        }
-      },
-    });
-  };
+  // const getDB = async () => {
+  //   return openDB("shopping-list-db", 1, {
+  //     upgrade(db) {
+  //       if (!db.objectStoreNames.contains("items")) {
+  //         const store = db.createObjectStore("items", { keyPath: "id" });
+  //         store.createIndex("dateAdded", "dateAdded"); // Create index on dateAdded
+  //       }
+  //     },
+  //   });
+  // };
 
   const addItem = async ({
     name,
@@ -103,19 +158,17 @@ export const ShoppingListProvider = ({
     details,
   }: PartialWithRequired<Item, "name">) => {
     const newItem: Item = {
-      id: uuid(),
       name,
       category,
       quantity: quantity || 1,
       details: details || "",
-      dateAdded: Date.now(),
-      dateCompleted: null,
     };
-    setItems((prev) => [...prev, newItem]);
+    socket.emit("item:add", newItem);
+    // setItems((prev) => [...prev, newItem]);
     // const db = await getDB();
     // await db.put("items", newItem);
 
-    categorize(newItem);
+    // categorize(newItem);
   };
 
   const toggleItem = (id: string) => {
@@ -129,39 +182,19 @@ export const ShoppingListProvider = ({
   };
 
   const updateItem = (item: Item) => {
-    setItems((prev) =>
-      prev.map((prevItem) =>
-        prevItem.id === item.id
-          ? {
-              ...prevItem,
-              ...item,
-              id: prevItem.id,
-              dateAdded: prevItem.dateAdded,
-              dateCompleted: null,
-            }
-          : prevItem
-      )
-    );
+    socket.emit("item:update", item);
   };
 
   const completeItem = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, dateCompleted: Date.now() } : item
-      )
-    );
+    socket.emit("item:complete", id);
   };
 
   const uncompleteItem = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, dateCompleted: null } : item
-      )
-    );
+    socket.emit("item:uncomplete", id);
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    socket.emit("item.delete", id);
   };
 
   return (

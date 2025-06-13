@@ -12,7 +12,7 @@ export default function Item({ item, onExpand }: ItemProps) {
   const [isPendingCompletion, setPendingCompletion] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const { completeItem, uncompleteItem, updateItem } = useShoppingList();
-  const { id, dateCompleted, name } = item;
+  const { id, completedAt, name } = item;
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const itemRef = useRef<HTMLLIElement>(null);
@@ -32,12 +32,12 @@ export default function Item({ item, onExpand }: ItemProps) {
   };
 
   useEffect(() => {
-    if (dateCompleted) {
+    if (completedAt) {
       setPendingCompletion(false);
       clearTimeout(timeout.current!);
       timeout.current = null;
     }
-  }, [dateCompleted]);
+  }, [completedAt]);
 
   return (
     <li
@@ -45,7 +45,7 @@ export default function Item({ item, onExpand }: ItemProps) {
       key={id}
       className={cn(
         isPendingCompletion && "opacity-50",
-        dateCompleted && "opacity-50 line-through italic",
+        completedAt && "opacity-50 line-through italic",
         "flex gap-2 py-1 items-start"
       )}
     >
@@ -54,7 +54,7 @@ export default function Item({ item, onExpand }: ItemProps) {
         name={id}
         onChange={handleToggle}
         className="mt-[5.5px]"
-        checked={!!dateCompleted || isPendingCompletion}
+        checked={!!completedAt || isPendingCompletion}
       />
       <label className="sr-only">Mark {name} completed</label>
       <div className="grow flex gap-x-1 flex-wrap">
@@ -90,21 +90,28 @@ export default function Item({ item, onExpand }: ItemProps) {
           </div>
         </div>
         {(item.details || isFocused) && (
-          <textarea
+          <div
+            contentEditable
+            spellCheck="false"
+            suppressContentEditableWarning
             className=" text-gray-500 placeholder-gray-500 placeholder:not-italic text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none w-full resize-none"
-            defaultValue={item.details}
-            rows={1}
-            placeholder="Add note..."
-            onFocus={() => {
+            defaultValue={item.details || ""}
+            onFocus={(e) => {
               setIsFocused(true);
+              if (e.target.textContent === "Add a note...") {
+                e.target.textContent = "";
+              }
             }}
             onBlur={(e) => {
               setIsFocused(false);
-              if (item.details !== e.target.value) {
+              if (item.details !== e.target.textContent) {
                 updateItem({
                   ...item,
-                  details: e.target.value,
+                  details: e.target.textContent,
                 });
+              }
+              if (e.target.textContent === "") {
+                e.target.textContent = "Add a note...";
               }
             }}
             ref={(el) => {
@@ -118,7 +125,9 @@ export default function Item({ item, onExpand }: ItemProps) {
               target.style.height = "auto";
               target.style.height = target.scrollHeight + "px";
             }}
-          />
+          >
+            {item.details || "Add a note..."}
+          </div>
         )}
       </div>
       {isFocused && (

@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import { faker } from "@faker-js/faker";
 
 import db from "./index.js";
-import { items, lists } from "./schema.js";
+import { items, lists } from "../../drizzle/schema.js";
 
 async function main() {
   const listIds = [uuid(), uuid()];

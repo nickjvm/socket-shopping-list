@@ -31,7 +31,7 @@ app.prepare().then(() => {
     socket.on("item:complete", async (itemId) => {
       await db
         .update(items)
-        .set({ dateCompleted: Date.now() })
+        .set({ completedAt: Date.now().toString() })
         .where(eq(items.id, itemId));
 
       io.to(room).emit("item:completed", itemId);
@@ -40,7 +40,7 @@ app.prepare().then(() => {
     socket.on("item:uncomplete", async (itemId) => {
       await db
         .update(items)
-        .set({ dateCompleted: null })
+        .set({ completedAt: null })
         .where(eq(items.id, itemId));
 
       io.to(room).emit("item:uncompleted", itemId);
@@ -71,7 +71,7 @@ app.prepare().then(() => {
           id: uuid(),
           name,
           category: category || "Other",
-          dateAdded: Date.now(),
+          createdAt: Date.now().toString(),
           quantity: quantity || 1,
           details,
           listId: room,

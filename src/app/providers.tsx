@@ -154,7 +154,7 @@ export const ShoppingListProvider = ({
 
   const renderedItems = showCompleted
     ? items
-    : items.filter((item) => !item.dateCompleted);
+    : items.filter((item) => !item.completedAt);
 
   function connectToList(listId: string) {
     socket.emit("list:connect", listId);
@@ -175,14 +175,14 @@ export const ShoppingListProvider = ({
       socket.on("item:completed", (itemId: string) => {
         setItems((prev) =>
           prev.map((item) =>
-            item.id === itemId ? { ...item, dateCompleted: Date.now() } : item
+            item.id === itemId ? { ...item, completedAt: Date.now() } : item
           )
         );
       });
       socket.on("item:uncompleted", (itemId: string) => {
         setItems((prev) =>
           prev.map((item) =>
-            item.id === itemId ? { ...item, dateCompleted: null } : item
+            item.id === itemId ? { ...item, completedAt: null } : item
           )
         );
       });
@@ -292,7 +292,7 @@ export const ShoppingListProvider = ({
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, dateCompleted: item.dateCompleted ? null : Date.now() }
+          ? { ...item, completedAt: item.completedAt ? null : Date.now() }
           : item
       )
     );

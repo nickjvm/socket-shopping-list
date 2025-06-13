@@ -1,7 +1,6 @@
 -- Current sql file was generated after introspecting the database
 -- If you want to run this migration please uncomment this code before executing migrations
-/*
-CREATE TABLE `items` (
+CREATE TABLE IF NOT EXISTS `items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`dateAdded` integer NOT NULL,
@@ -12,9 +11,8 @@ CREATE TABLE `items` (
 	`list_id` text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `lists` (
+CREATE TABLE IF NOT EXISTS `lists` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL
+	`dateCreated` integer DEFAULT (strftime('%s', 'now') * 1000) NOT NULL
 );
-
-*/

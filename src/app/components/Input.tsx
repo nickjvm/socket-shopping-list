@@ -35,7 +35,7 @@ export default function Input({
     <div className={cn("flex gap-2 relative", className)}>
       <label
         className={cn(
-          "absolute top-0 transform translate-y-[-50%]  px-1 transition-all duration-200",
+          "rounded absolute top-0 transform translate-y-[-50%]  px-1 transition-all duration-200",
           "-translate-y-1/2 pl-4 left-0",
           props.id || props.name ? "pointer-events-none" : "cursor-pointer",
           props.placeholder || focused || value

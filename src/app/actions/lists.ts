@@ -1,78 +1,60 @@
 "use server";
 
 import { v4 as uuid } from "uuid";
-import { createClient } from "@libsql/client";
 import { redirect } from "next/navigation";
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
-export async function fetchListItems(listId: string) {
-  const result = await client.execute({
-    sql: "SELECT * FROM items WHERE list_id = ?",
-    args: [listId],
-  });
-
-  return JSON.parse(JSON.stringify(result.rows)) as Item[];
-}
+import db from "@/db";
+import { items, lists } from "@/../drizzle/schema";
+import { eq, inArray } from "drizzle-orm";
 
 export async function createList(formData: FormData) {
   const id = uuid();
-  await client.execute({
-    sql: "INSERT INTO lists (id, name) VALUES (?, ?)",
-    args: [id, formData.get("name") as string],
+
+  await db.insert(lists).values({
+    id,
+    name: formData.get("name") as string,
   });
 
   redirect(`/list/${id}`);
 }
 
 export async function fetchList(listId: string) {
-  const result = await client.execute({
-    sql: `
-            SELECT lists.id, lists.name, 
-                json_group_array(
-                    json_object(
-                        'id', items.id,
-                        'name', items.name,
-                        'quantity', items.quantity,
-                        'details', items.details,
-                        'dateAdded', items.dateAdded,
-                        'dateCompleted', items.dateCompleted
-                    )
-                ) as items
-            FROM lists
-            LEFT JOIN items ON items.list_id = lists.id
-            WHERE lists.id = ?
-            GROUP BY lists.id, lists.name
-    `,
-    args: [listId],
-  });
+  const results = await db
+    .select({
+      lists,
+      items,
+    })
+    .from(lists)
+    .leftJoin(items, eq(lists.id, items.listId))
+    .where(eq(lists.id, listId));
 
-  console.log(result);
+  // Group items by list
+  const grouped = results.reduce<{
+    list: typeof lists.$inferSelect | null;
+    items: (typeof items.$inferSelect)[];
+  }>(
+    (acc, row) => {
+      if (!acc.list && row.lists) acc.list = row.lists;
+      if (row.items) acc.items.push(row.items);
+      return acc;
+    },
+    { list: null, items: [] }
+  );
+
   return {
-    id: result.rows[0].id as string,
-    name: result.rows[0].name as string,
-    items: JSON.parse((result.rows[0].items as string) || "[]") as Item[],
+    id: grouped.list?.id || listId,
+    name: grouped.list?.name || "Untitled List",
+    items: grouped.items,
   };
 }
 
 export async function fetchLists(listIds: string[]) {
   if (listIds.length === 0) return [];
 
-  const placeholders = listIds.map(() => "?").join(",");
-  const result = await client.execute({
-    sql: `
-            SELECT lists.id, lists.name
-            FROM lists
-            WHERE lists.id IN (${placeholders})
-    `,
-    args: listIds,
-  });
+  const result = await db
+    .select()
+    .from(lists)
+    .where(inArray(lists.id, listIds));
 
-  return JSON.parse(JSON.stringify(result.rows)) as {
-    id: string;
-    name: string;
-  }[];
+  return result;
 }

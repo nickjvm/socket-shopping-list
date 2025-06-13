@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4 p-4">
       <form action={createList} className="w-full max-w-xl">
-        <h1 className="text-2xl mb-2">Create a Shopping List</h1>
+        <h1 className="text-2xl mb-4">Create a Shopping List</h1>
         <div className="flex gap-2">
           <Input autoFocus label="List Name" name="name" className="w-full" />
           <button

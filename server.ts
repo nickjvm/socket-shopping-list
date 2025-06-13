@@ -78,7 +78,6 @@ app.prepare().then(() => {
         })
         .returning();
 
-      console.log(rows);
       io.to(room).emit("item:added", rows[0]);
 
       import("./src/app/actions/example.js").then(

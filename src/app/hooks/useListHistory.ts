@@ -11,6 +11,7 @@ export function useListHistory() {
     const localHistory =
       window.localStorage.getItem(HISTORY_KEY)?.split(",") || [];
     fetchLists(localHistory).then((lists) => {
+      console.log(lists);
       setPending(false);
       setHistory(
         localHistory.map((id) => {

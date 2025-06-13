@@ -3,7 +3,7 @@ import { sqliteTable, AnySQLiteColumn, text, integer } from "drizzle-orm/sqlite-
 
 export const items = sqliteTable("items", {
 	id: text().primaryKey().notNull(),
-	name: text(),
+	name: text().notNull(),
 	dateAdded: integer().notNull(),
 	dateCompleted: integer().default(sql`(null)`),
 	category: text().default("Other").notNull(),

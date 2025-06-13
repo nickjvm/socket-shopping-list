@@ -311,7 +311,7 @@ export const ShoppingListProvider = ({
   };
 
   const removeItem = (id: string) => {
-    socket.emit("item.delete", id);
+    socket.emit("item:delete", id);
   };
 
   return (

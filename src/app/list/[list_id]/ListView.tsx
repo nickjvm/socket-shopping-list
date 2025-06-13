@@ -38,6 +38,7 @@ export default function ListPage({ list }: ListPageProps) {
     }
 
     function onConnect() {
+      console.log(list.id);
       connectToList(list.id);
       socket.onAny(console.log);
       const history = window.localStorage.getItem("history")?.split(",") || [];

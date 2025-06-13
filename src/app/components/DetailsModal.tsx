@@ -3,6 +3,7 @@ import { useShoppingList } from "../providers";
 import { FiX } from "react-icons/fi";
 import { TbTrash } from "react-icons/tb";
 import Input from "./Input";
+import Select from "./Select";
 
 export type DetailsModalProps = {
   data: {
@@ -42,7 +43,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
         </div>
 
         <form
-          className="mt-auto grid gap-2"
+          className="mt-auto grid gap-2 gap-y-3"
           onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
@@ -90,13 +91,12 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
               inputClassName="w-[60px]"
             />
           </div>
-          <select
+          <Select
             name="category"
-            className="border border-gray-500 rounded w-full px-4 py-2 dark:bg-slate-800"
+            className=""
+            // placeholder="Select a category"
             defaultValue={data.item?.category || ""}
-          >
-            <option value="">Select category</option>
-            {[
+            options={[
               "Produce",
               "Meat & Seafood",
               "Bakery",
@@ -112,15 +112,17 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
               "Pet Care",
               "Clothing",
               "Other",
-            ].map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+            ].map((category) => ({
+              value: category,
+              label: category,
+            }))}
+            label="Category"
+            id="category"
+          />
 
           <textarea
-            className="w-full dark:bg-slate-800 border rounded border-gray-500 px-4 py-2"
+            placeholder="Additional details (optional)"
+            className="w-full dark:bg-slate-900 border rounded border-gray-500 px-4 py-2"
             name="details"
             defaultValue={data.item?.details || ""}
           />

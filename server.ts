@@ -2,9 +2,11 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { v4 as uuid } from "uuid";
-import { createClient } from "@libsql/client";
+import { eq } from "drizzle-orm";
 
-// import { categorizeItem } from "./src/app/actions/example.js";
+import db from "./src/db/index.js";
+import { items } from "./drizzle/schema.js";
+
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
 const port = 3000;
@@ -14,12 +16,6 @@ const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
   const httpServer = createServer(handler);
-
-  const turso = createClient({
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
-  });
-
   const io = new Server(httpServer);
 
   io.on("connection", (socket) => {
@@ -28,55 +24,71 @@ app.prepare().then(() => {
     socket.on("list:connect", async (id) => {
       room = id;
       socket.join(id);
-      const { rows } = await turso.execute(
-        "SELECT * FROM items WHERE list_id = ?",
-        [id]
-      );
-
+      const rows = await db.select().from(items).where(eq(items.listId, id));
       socket.emit("items:retrieved", rows);
     });
+
     socket.on("item:complete", async (itemId) => {
-      await turso.execute("UPDATE items SET dateCompleted = ? WHERE id = ?", [
-        Date.now(),
-        itemId,
-      ]);
+      await db
+        .update(items)
+        .set({ dateCompleted: Date.now() })
+        .where(eq(items.id, itemId));
+
       io.to(room).emit("item:completed", itemId);
     });
+
     socket.on("item:uncomplete", async (itemId) => {
-      await turso.execute(
-        "UPDATE items SET dateCompleted = NULL WHERE id = ?",
-        [itemId]
-      );
+      await db
+        .update(items)
+        .set({ dateCompleted: null })
+        .where(eq(items.id, itemId));
+
       io.to(room).emit("item:uncompleted", itemId);
     });
-    socket.on("item:delete", (itemId) => {
+
+    socket.on("item:delete", async (itemId) => {
+      await db.delete(items).where(eq(items.id, itemId));
       io.to(room).emit("item:deleted", itemId);
     });
-    socket.on("item:update", (item) => {
+
+    socket.on("item:update", async (item) => {
+      await db
+        .update(items)
+        .set({
+          name: item.name,
+          category: item.category || "Other",
+          quantity: item.quantity,
+          details: item.details,
+        })
+        .where(eq(items.id, item.id));
       io.to(room).emit("item:updated", item);
     });
+
     socket.on("item:add", async ({ name, category, quantity, details }) => {
-      const { rows } = await turso.execute(
-        "INSERT INTO items (id, name, category, dateAdded, quantity, details, list_id) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *",
-        [
-          uuid(),
+      const rows = await db
+        .insert(items)
+        .values({
+          id: uuid(),
           name,
-          category || "Other",
-          Date.now(),
-          quantity || 1,
+          category: category || "Other",
+          dateAdded: Date.now(),
+          quantity: quantity || 1,
           details,
-          room,
-        ]
-      );
+          listId: room,
+        })
+        .returning();
+
       console.log(rows);
       io.to(room).emit("item:added", rows[0]);
+
       import("./src/app/actions/example.js").then(
         async ({ categorizeItem }) => {
           const category = await categorizeItem(name);
-          turso.execute("UPDATE items SET category = ? WHERE id = ?", [
-            category || "Other",
-            rows[0].id,
-          ]);
+          await db
+            .update(items)
+            .set({ category: category || "Other" })
+            .where(eq(items.id, rows[0].id));
+
           io.emit("item:updated", {
             ...rows[0],
             category,

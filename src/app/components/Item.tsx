@@ -68,6 +68,12 @@ export default function Item({ item, onExpand }: ItemProps) {
             onFocus={() => {
               setIsFocused(true);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                (e.target as HTMLDivElement).blur();
+              }
+            }}
             onBlur={(e) => {
               if (e.target.textContent !== name) {
                 updateItem({

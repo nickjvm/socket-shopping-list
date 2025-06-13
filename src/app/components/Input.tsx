@@ -39,7 +39,7 @@ export default function Input({
           "-translate-y-1/2 pl-4 left-0",
           props.id || props.name ? "pointer-events-none" : "cursor-pointer",
           props.placeholder || focused || value
-            ? "text-sm top-0 w-auto bg-white pl-2 left-2"
+            ? "text-sm top-0 w-auto bg-white dark:bg-slate-900 pl-2 left-2"
             : "top-1/2 w-full text-base text-slate-500 cursor-pointer"
         )}
         htmlFor={props.id}
@@ -51,7 +51,7 @@ export default function Input({
         onBlur={handleBlur}
         onFocus={handleFocus}
         className={cn(
-          "border border-gray-500 rounded w-full px-4 py-2 dark:bg-slate-800",
+          "border border-gray-500 rounded w-full px-4 py-2 dark:bg-slate-900",
           "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
           inputClassName
         )}

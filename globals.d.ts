@@ -9,4 +9,6 @@ type Item = {
   weight?: number;
 };
 
+type ClientItem = Omit<Item, "dateAdded" | "dateCompleted" | "id">;
+
 type PartialWithRequired<T, K extends keyof T> = Pick<T, K> & Partial<T>;

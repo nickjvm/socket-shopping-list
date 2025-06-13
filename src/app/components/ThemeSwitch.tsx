@@ -13,11 +13,23 @@ export default function ThemeSwitch() {
 
   if (!mounted) return null;
 
-  if (resolvedTheme === "dark") {
-    return <FiSun onClick={() => setTheme("light")} />;
-  }
-
-  if (resolvedTheme === "light") {
-    return <FiMoon onClick={() => setTheme("dark")} />;
-  }
+  return (
+    <button
+      className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10  hover:bg-white dark:hover:bg-slate-600 transition-colors"
+      onClick={() => {
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      }}
+    >
+      {resolvedTheme === "dark" && (
+        <>
+          <FiSun /> Switch to Light Mode
+        </>
+      )}
+      {resolvedTheme === "light" && (
+        <>
+          <FiMoon /> Switch to Dark Mode
+        </>
+      )}
+    </button>
+  );
 }

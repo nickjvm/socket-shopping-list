@@ -25,7 +25,7 @@ export async function createList(formData: FormData) {
     args: [id, formData.get("name") as string],
   });
 
-  redirect(`/${id}`);
+  redirect(`/list/${id}`);
 }
 
 export async function fetchList(listId: string) {

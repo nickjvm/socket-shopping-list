@@ -3,7 +3,7 @@ type Item = {
   name: string;
   category?: string;
   quantity: number;
-  details: string;
+  details?: string | null;
   dateAdded: number;
   dateCompleted: number | null;
   weight?: number;

@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { v4 as uuid } from "uuid";
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql, SQL } from "drizzle-orm";
 
 import db from "./src/db/index.js";
 import { items } from "./drizzle/schema.js";
@@ -24,10 +24,53 @@ app.prepare().then(() => {
     socket.on("list:connect", async (id) => {
       room = id;
       socket.join(id);
-      const rows = await db.select().from(items).where(eq(items.listId, id));
+      const rows = await db
+        .select()
+        .from(items)
+        .where(eq(items.listId, id))
+        .orderBy(items.index);
       socket.emit("items:retrieved", rows);
     });
 
+    socket.on(
+      "list:sort",
+      async (listItems: { id: string; index: number; category: string }[]) => {
+        console.log("list:sort", listItems);
+        const indexSqlChunks: SQL[] = [];
+        const categorySqlChunks: SQL[] = [];
+        const ids: string[] = [];
+
+        indexSqlChunks.push(sql`(case`);
+        categorySqlChunks.push(sql`(case`);
+
+        for (const item of listItems) {
+          indexSqlChunks.push(
+            sql`when ${items.id} = ${item.id} then ${item.index}`
+          );
+          categorySqlChunks.push(
+            sql`when ${items.id} = ${item.id} then ${item.category}`
+          );
+          ids.push(item.id);
+        }
+
+        indexSqlChunks.push(sql`end)`);
+        categorySqlChunks.push(sql`end)`);
+
+        const indexSql: SQL = sql.join(indexSqlChunks, sql.raw(" "));
+        const categorySql: SQL = sql.join(categorySqlChunks, sql.raw(" "));
+
+        const nextItems = await db
+          .update(items)
+          .set({ index: indexSql, category: categorySql })
+          .where(inArray(items.id, ids))
+          .returning();
+
+        io.to(room).emit(
+          "items:retrieved",
+          nextItems.sort((a, b) => a.index - b.index)
+        );
+      }
+    );
     socket.on("item:complete", async (itemId) => {
       await db
         .update(items)
@@ -75,11 +118,13 @@ app.prepare().then(() => {
           quantity: quantity || 1,
           details,
           listId: room,
+          index: 9999999999, // default index, will be updated later
         })
         .returning();
 
       io.to(room).emit("item:added", rows[0]);
 
+      if (category) return;
       import("./src/app/actions/example.js").then(
         async ({ categorizeItem }) => {
           const category = await categorizeItem(name);

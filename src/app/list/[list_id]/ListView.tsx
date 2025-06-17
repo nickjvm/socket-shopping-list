@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { TbWindowMaximize } from "react-icons/tb";
 import { FiShare } from "react-icons/fi";
-
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { socket } from "@/socket";
 import { useShoppingList } from "@/app/providers";
 
@@ -19,7 +19,7 @@ type ListPageProps = {
 };
 
 export default function ListPage({ list }: ListPageProps) {
-  const { addItem, data, connectToList } = useShoppingList();
+  const { addItem, data, connectToList, setItems } = useShoppingList();
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
   >(null);
@@ -68,6 +68,98 @@ export default function ListPage({ list }: ListPageProps) {
       // Fallback for browsers that don't support the API
     }
   }
+
+  const onDragStart = () => {};
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) {
+      return; // dropped outside of any droppable
+    }
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return; //dropped in the same place
+    }
+
+    // Update the state with the new order
+    const start = data.categories.find(
+      (c) => c.id === source.droppableId
+    ) as Category;
+    const finish = data.categories.find(
+      (c) => c.id === destination.droppableId
+    ) as Category;
+
+    if (start.id === finish.id) {
+      // Moving within the same category
+      const newItems = Array.from(start.items);
+      newItems.splice(source.index, 1);
+      newItems.splice(destination.index, 0, draggableId);
+
+      const updatedCategory = {
+        ...start,
+        items: newItems,
+      };
+
+      setItems((prevItems) => {
+        const nextItems = prevItems
+          .map((item) => {
+            let index = item.index;
+            if (updatedCategory.name === item.category) {
+              index = updatedCategory.items.indexOf(item.id);
+            }
+            return {
+              ...item,
+              category: item.category === start.id ? finish.id : item.category,
+              index,
+            };
+          })
+          .sort((a, b) => a.index - b.index);
+        socket.emit("list:sort", nextItems);
+        return nextItems;
+      });
+    } else {
+      // Moving between categories
+      const startItems = Array.from(start.items);
+      startItems.splice(source.index, 1); // Remove from source category
+      const finishItems = Array.from(finish.items);
+      finishItems.splice(destination.index, 0, draggableId); // Add to destination category
+      const updatedStartCategory = {
+        ...start,
+        items: startItems,
+      };
+      const updatedFinishCategory = {
+        ...finish,
+        items: finishItems,
+      };
+
+      setItems((prevItems) => {
+        const nextItems = prevItems
+          .map((item) => {
+            const category =
+              item.id === draggableId && item.category === start.id
+                ? finish.id
+                : item.category;
+            let index = item.index;
+            if (updatedStartCategory.name === category) {
+              index = updatedStartCategory.items.indexOf(item.id);
+            } else if (updatedFinishCategory.name === category) {
+              index = updatedFinishCategory.items.indexOf(item.id);
+            }
+            return {
+              ...item,
+              category,
+              index,
+            };
+          })
+          .sort((a, b) => a.index - b.index);
+        socket.emit("list:sort", nextItems);
+
+        return nextItems;
+      });
+    }
+  };
+  const onDragUpdate = () => {};
   return (
     <div className="flex flex-col h-screen">
       <div className="flex justify-between items-center p-4 pr-14">
@@ -79,15 +171,21 @@ export default function ListPage({ list }: ListPageProps) {
           <FiShare className="w-4 h-4" />
         </button>
       </div>
-      <ul className="grow overflow-auto px-4">
-        {data.categories.map((category) => (
-          <Category
-            key={category.id}
-            setModalContext={setModalContext}
-            category={category}
-          />
-        ))}
-      </ul>
+      <DragDropContext
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragUpdate={onDragUpdate}
+      >
+        <ul className="grow overflow-auto px-4">
+          {data.categories.map((category) => (
+            <Category
+              key={category.id}
+              setModalContext={setModalContext}
+              category={category}
+            />
+          ))}
+        </ul>
+      </DragDropContext>
       <form
         className="mt-auto gap-2 flex p-4 border-t border-slate-300"
         onSubmit={async (e) => {

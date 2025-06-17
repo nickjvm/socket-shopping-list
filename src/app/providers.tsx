@@ -134,6 +134,7 @@ type ShoppingListData = {
 };
 type ShoppingListContextType = {
   data: ShoppingListData;
+  setItems: React.Dispatch<React.SetStateAction<Item[]>>;
   connectToList: (listId: string) => void;
   addItem: (item: PartialWithRequired<Item, "name">) => void;
   toggleItem: (id: string) => void;
@@ -156,6 +157,7 @@ export const ShoppingListProvider = ({
 }) => {
   const [items, setItems] = useState<Item[]>([]);
 
+  console.log(items);
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
 
   const data: ShoppingListData = {
@@ -331,6 +333,7 @@ export const ShoppingListProvider = ({
     <ShoppingListContext.Provider
       value={{
         data,
+        setItems,
         connectToList,
         addItem,
         toggleItem,

@@ -1,6 +1,7 @@
 import { useShoppingList } from "@/app/providers";
 
 import Item from "@/app/components/Item";
+import { Droppable } from "@hello-pangea/dnd";
 
 type CategoryProps = {
   category: Category;
@@ -8,30 +9,41 @@ type CategoryProps = {
 };
 
 export default function Category({ setModalContext, category }: CategoryProps) {
-  const { data } = useShoppingList();
+  const { data, showCompleted } = useShoppingList();
 
   const items = category.items.map(
     (itemId) => data.items.find((item) => item.id === itemId) as Item
   );
 
-  console.log(category.items, items);
   return (
     <li>
       <h2 className="text-xl font-bold">{category.name}</h2>
-      <ul className="mb-2">
-        {items.map((item) => (
-          <Item
-            item={item}
-            key={item.id}
-            onExpand={() =>
-              setModalContext({
-                mode: "edit",
-                item,
-              })
-            }
-          />
-        ))}
-      </ul>
+      <Droppable droppableId={category.id}>
+        {(provided) => (
+          <ul
+            className="mb-2"
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+          >
+            {items
+              .filter((item) => showCompleted || !item.completedAt)
+              .map((item, index) => (
+                <Item
+                  index={index}
+                  item={item}
+                  key={item.id}
+                  onExpand={() =>
+                    setModalContext({
+                      mode: "edit",
+                      item,
+                    })
+                  }
+                />
+              ))}
+            {provided.placeholder}
+          </ul>
+        )}
+      </Droppable>
     </li>
   );
 }

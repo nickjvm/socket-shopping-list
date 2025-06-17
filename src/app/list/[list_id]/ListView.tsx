@@ -1,14 +1,14 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { TbWindowMaximize } from "react-icons/tb";
-import { socket } from "@/socket";
+import { FiShare } from "react-icons/fi";
 
+import { socket } from "@/socket";
 import { useShoppingList } from "@/app/providers";
 
-import Item from "@/app/components/Item";
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
-import { FiShare } from "react-icons/fi";
+import Category from "@/app/components/Category";
 
 type ListPageProps = {
   list: {
@@ -19,18 +19,10 @@ type ListPageProps = {
 };
 
 export default function ListPage({ list }: ListPageProps) {
-  const { addItem, items, connectToList } = useShoppingList();
+  const { addItem, data, connectToList } = useShoppingList();
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
   >(null);
-
-  const itemsByCategory = items.reduce((acc, item: Item) => {
-    if (!acc[item.category || "Other"]) {
-      acc[item.category || "Other"] = [];
-    }
-    acc[item.category || "Other"].push(item);
-    return acc;
-  }, {} as Record<string, Item[]>);
 
   useEffect(() => {
     if (socket.connected) {
@@ -88,26 +80,12 @@ export default function ListPage({ list }: ListPageProps) {
         </button>
       </div>
       <ul className="grow overflow-auto px-4">
-        {Object.keys(itemsByCategory).map((category) => (
-          <Fragment key={category}>
-            <li>
-              <h2 className="text-xl font-bold">{category}</h2>
-              <ul className="mb-2">
-                {itemsByCategory[category].map((item) => (
-                  <Item
-                    item={item}
-                    key={item.id}
-                    onExpand={() =>
-                      setModalContext({
-                        mode: "edit",
-                        item,
-                      })
-                    }
-                  />
-                ))}
-              </ul>
-            </li>
-          </Fragment>
+        {data.categories.map((category) => (
+          <Category
+            key={category.id}
+            setModalContext={setModalContext}
+            category={category}
+          />
         ))}
       </ul>
       <form

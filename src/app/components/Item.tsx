@@ -1,7 +1,8 @@
-import cn from "@/utils/cn";
-import { useShoppingList } from "../providers";
 import { useEffect, useRef, useState } from "react";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+
+import cn from "@/utils/cn";
+import { useShoppingList } from "@/app/providers";
 
 type ItemProps = {
   item: Item;
@@ -11,7 +12,8 @@ type ItemProps = {
 export default function Item({ item, onExpand }: ItemProps) {
   const [isPendingCompletion, setPendingCompletion] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const { completeItem, uncompleteItem, updateItem } = useShoppingList();
+  const { completeItem, uncompleteItem, updateItem, showCompleted } =
+    useShoppingList();
   const { id, completedAt, name } = item;
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
@@ -38,6 +40,10 @@ export default function Item({ item, onExpand }: ItemProps) {
       timeout.current = null;
     }
   }, [completedAt]);
+
+  if (!showCompleted && item.completedAt) {
+    return null;
+  }
 
   return (
     <li

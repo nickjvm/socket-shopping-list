@@ -14,6 +14,7 @@ import { useListHistory } from "./hooks/useListHistory";
 import { IoIosClose } from "react-icons/io";
 import { usePathname } from "next/navigation";
 import ThemeSwitch from "./components/ThemeSwitch";
+import { CATEGORIES } from "./constants";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -127,8 +128,12 @@ export const useLayout = () => {
   return context;
 };
 
-type ShoppingListContextType = {
+type ShoppingListData = {
+  categories: Category[];
   items: Item[];
+};
+type ShoppingListContextType = {
+  data: ShoppingListData;
   connectToList: (listId: string) => void;
   addItem: (item: PartialWithRequired<Item, "name">) => void;
   toggleItem: (id: string) => void;
@@ -150,11 +155,19 @@ export const ShoppingListProvider = ({
   children: React.ReactNode;
 }) => {
   const [items, setItems] = useState<Item[]>([]);
+
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
 
-  const renderedItems = showCompleted
-    ? items
-    : items.filter((item) => !item.completedAt);
+  const data: ShoppingListData = {
+    categories: CATEGORIES.filter((c) =>
+      items.some((item) => item.category === c)
+    ).map((c) => ({
+      id: c,
+      name: c,
+      items: items.filter((item) => item.category === c).map((item) => item.id),
+    })),
+    items: items,
+  };
 
   function connectToList(listId: string) {
     socket.emit("list:connect", listId);
@@ -317,7 +330,7 @@ export const ShoppingListProvider = ({
   return (
     <ShoppingListContext.Provider
       value={{
-        items: renderedItems,
+        data,
         connectToList,
         addItem,
         toggleItem,

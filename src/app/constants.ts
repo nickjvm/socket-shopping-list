@@ -1,0 +1,17 @@
+export const CATEGORIES = [
+  "Produce",
+  "Meat & Seafood",
+  "Bakery",
+  "Canned Goods",
+  "Beverages",
+  "Dairy",
+  "Snacks",
+  "Pantry Items",
+  "Frozen Foods",
+  "Household",
+  "Personal Care",
+  "Baby",
+  "Pet Care",
+  "Clothing",
+  "Other",
+] as const;

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { IoCloseOutline } from "react-icons/io5";
+
 import { useDispatch, useSelector } from "react-redux";
 import { IoIosClose } from "react-icons/io";
 import { FiPlusSquare } from "react-icons/fi";
@@ -21,7 +23,7 @@ export default function NavMenu() {
   const pathname = usePathname();
   const params = useParams();
   const { showCompleted, setShowCompleted } = useShoppingList();
-  const sidebaropen = useSelector(
+  const sidebarOpen = useSelector(
     (state: RootState) => state.layout.sidebarOpen
   );
   const dispatch = useDispatch<AppDispatch>();
@@ -42,14 +44,18 @@ export default function NavMenu() {
       <div
         className={cn(
           "max-w-[calc(100vw-60px)] w-3xs bg-slate-100 dark:bg-slate-800 border-l border-l-slate-300 dark:border-l-slate-700 absolute top-0 right-0 bottom-0 translate-x-full transition-transform duration-300 z-20",
-          sidebaropen && "translate-x-0"
+          sidebarOpen && "translate-x-0"
         )}
       >
         <button
           onClick={() => dispatch(toggleSidebar())}
           className="cursor-pointer mt-4 mr-4 p-2 absolute right-full hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
-          <RxHamburgerMenu className="size-4 fill-black/60" />
+          {sidebarOpen ? (
+            <IoCloseOutline className="w-4 h-4" />
+          ) : (
+            <RxHamburgerMenu className="w-4 h-4" />
+          )}
         </button>
         <div className="py-4 h-full flex flex-col">
           {!!history.length && (
@@ -104,7 +110,7 @@ export default function NavMenu() {
         onClick={() => dispatch(setSidebarOpen(false))}
         className={cn(
           " bg-white/80 dark:bg-black/80 fixed inset-0 z-10 pointer-events-none opacity-0 transition-opacity",
-          sidebaropen && "opacity-100 pointer-events-auto"
+          sidebarOpen && "opacity-100 pointer-events-auto"
         )}
       />
     </>

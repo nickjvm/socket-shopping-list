@@ -1,4 +1,4 @@
-import { useShoppingList } from "@/app/providers";
+import { useShoppingList } from "@/app/providers/ShoppingList";
 
 import Item from "@/app/components/Item";
 import { Droppable } from "@hello-pangea/dnd";
@@ -17,7 +17,7 @@ export default function Category({ setModalContext, category }: CategoryProps) {
 
   return (
     <li>
-      <h2 className="text-xl font-bold">{category.name}</h2>
+      <h2 className="text-xl font-bold -ml-2">{category.name}</h2>
       <Droppable droppableId={category.id}>
         {(provided) => (
           <ul
@@ -40,6 +40,7 @@ export default function Category({ setModalContext, category }: CategoryProps) {
                   }
                 />
               ))}
+            {/* todo: add input to add item directly to this category */}
             {provided.placeholder}
           </ul>
         )}

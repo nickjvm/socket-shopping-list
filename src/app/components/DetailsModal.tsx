@@ -1,7 +1,9 @@
 import React from "react";
-import { useShoppingList } from "../providers";
 import { FiX } from "react-icons/fi";
 import { TbTrash } from "react-icons/tb";
+
+import { useShoppingList } from "@/app/providers/ShoppingList";
+
 import Input from "./Input";
 import Select from "./Select";
 

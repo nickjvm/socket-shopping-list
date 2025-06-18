@@ -4,8 +4,8 @@ type Item = {
   category?: string;
   quantity: number;
   details?: string | null;
-  createdAt: number;
-  completedAt: number | null;
+  createdAt: string;
+  completedAt: string | null;
   index: number;
 };
 

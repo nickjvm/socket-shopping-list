@@ -123,11 +123,18 @@ app.prepare().then(() => {
         .returning();
 
       io.to(room).emit("item:added", rows[0]);
-
+      setTimeout(() => {
+        socket.emit("item:highlight", rows[0].id);
+      }, 250);
       if (category) return;
       import("./src/app/actions/example.js").then(
         async ({ categorizeItem }) => {
           const category = await categorizeItem(name);
+
+          if (category === "Other") {
+            return;
+          }
+
           await db
             .update(items)
             .set({ category: category || "Other" })
@@ -135,6 +142,10 @@ app.prepare().then(() => {
 
           io.emit("item:updated", {
             ...rows[0],
+            category,
+          });
+          socket.emit("item:categorized", {
+            id: rows[0].id,
             category,
           });
         }

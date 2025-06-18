@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { Draggable } from "@hello-pangea/dnd";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+import { RxDragHandleDots2 } from "react-icons/rx";
 
 import cn from "@/utils/cn";
-import { useShoppingList } from "@/app/providers";
-import { Draggable } from "@hello-pangea/dnd";
-import { RxDragHandleDots2 } from "react-icons/rx";
+import { socket } from "@/socket";
+
+import { useShoppingList } from "@/app/providers/ShoppingList";
 
 type ItemProps = {
   item: Item;
@@ -20,6 +22,29 @@ export default function Item({ item, onExpand, index }: ItemProps) {
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const itemRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const scrollToItem = (itemId: string) => {
+      if (item.id === itemId) {
+        // Find the closest parent UL and scroll it instead of the document body
+        const ul = itemRef.current?.closest("#list");
+        if (ul && itemRef.current) {
+          const itemRect = itemRef.current.getBoundingClientRect();
+          const ulRect = ul.getBoundingClientRect();
+          const offset =
+            itemRect.top -
+            ulRect.top -
+            ul.clientHeight / 2 +
+            itemRect.height / 2;
+          ul.scrollBy({ top: offset, behavior: "smooth" });
+        }
+      }
+    };
+    socket.on("item:highlight", scrollToItem);
+    return () => {
+      socket.off("item:highlight", scrollToItem);
+    };
+  }, [item.id]);
 
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.checked) {
@@ -49,7 +74,10 @@ export default function Item({ item, onExpand, index }: ItemProps) {
         <li
           key={id}
           {...provided.draggableProps}
-          ref={provided.innerRef}
+          ref={(el) => {
+            itemRef.current = el;
+            provided.innerRef(el);
+          }}
           className={cn(
             isPendingCompletion && "opacity-50",
             completedAt && "opacity-50 line-through italic",
@@ -111,7 +139,6 @@ export default function Item({ item, onExpand, index }: ItemProps) {
                 spellCheck="false"
                 suppressContentEditableWarning
                 className=" text-gray-500 placeholder-gray-500 placeholder:not-italic text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none w-full resize-none"
-                defaultValue={item.details || ""}
                 onFocus={(e) => {
                   setIsFocused(true);
                   if (e.target.textContent === "Add a note...") {
@@ -119,7 +146,9 @@ export default function Item({ item, onExpand, index }: ItemProps) {
                   }
                 }}
                 onBlur={(e) => {
-                  setIsFocused(false);
+                  if (!itemRef.current?.contains(e.relatedTarget)) {
+                    setIsFocused(false);
+                  }
                   if (item.details !== e.target.textContent) {
                     updateItem({
                       ...item,
@@ -130,17 +159,6 @@ export default function Item({ item, onExpand, index }: ItemProps) {
                     e.target.textContent = "Add a note...";
                   }
                 }}
-                ref={(el) => {
-                  if (el) {
-                    el.style.height = "auto";
-                    el.style.height = el.scrollHeight + "px";
-                  }
-                }}
-                onInput={(e) => {
-                  const target = e.currentTarget;
-                  target.style.height = "auto";
-                  target.style.height = target.scrollHeight + "px";
-                }}
               >
                 {item.details || "Add a note..."}
               </div>
@@ -150,9 +168,7 @@ export default function Item({ item, onExpand, index }: ItemProps) {
             <button
               onClick={() => {
                 onExpand(item);
-                setTimeout(() => {
-                  setIsFocused(false);
-                }, 1);
+                setIsFocused(false);
               }}
               className="cursor-pointer"
             >

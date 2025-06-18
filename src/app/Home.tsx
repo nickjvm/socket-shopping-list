@@ -6,9 +6,19 @@ import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
 import { IoIosClose } from "react-icons/io";
 import { useListHistory } from "./hooks/useListHistory";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { history, remove: deleteFromHistory } = useListHistory();
+  const {
+    history,
+    remove: deleteFromHistory,
+    get: getHistory,
+  } = useListHistory();
+
+  useEffect(() => {
+    getHistory();
+  }, []);
+
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4 p-4">
       <form action={createList} className="w-full max-w-xl">

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TbWindowMaximize } from "react-icons/tb";
 import { FiShare } from "react-icons/fi";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { socket } from "@/socket";
-import { useShoppingList } from "@/app/providers";
+import { useShoppingList } from "@/app/providers/ShoppingList";
 
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
 import Category from "@/app/components/Category";
+import { useNotifications } from "@/app/providers/Notifications";
 
 type ListPageProps = {
   list: {
@@ -20,6 +21,7 @@ type ListPageProps = {
 
 export default function ListPage({ list }: ListPageProps) {
   const { addItem, data, connectToList, setItems } = useShoppingList();
+  const { addNotification } = useNotifications();
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
   >(null);
@@ -30,9 +32,7 @@ export default function ListPage({ list }: ListPageProps) {
     }
 
     function onConnect() {
-      console.log(list.id);
       connectToList(list.id);
-      socket.onAny(console.log);
       const history = window.localStorage.getItem("history")?.split(",") || [];
       window.localStorage.setItem(
         "history",
@@ -41,11 +41,14 @@ export default function ListPage({ list }: ListPageProps) {
     }
 
     function onDisconnect() {
-      // disconnectFromList()
+      socket.removeAllListeners("item:categorized");
     }
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("item:categorized", ({ category }) => {
+      addNotification(`Moved to ${category}`, "info", 3000);
+    });
 
     return () => {
       socket.off("connect", onConnect);
@@ -53,6 +56,8 @@ export default function ListPage({ list }: ListPageProps) {
     };
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [list.id]);
+
+  const listRef = useRef<HTMLUListElement>(null);
 
   function shareList() {
     if (navigator.share) {
@@ -162,7 +167,7 @@ export default function ListPage({ list }: ListPageProps) {
   const onDragUpdate = () => {};
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex justify-between items-center p-4 pr-14">
+      <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300">
         <h1 className="text-2xl font-bold">{list.name}</h1>
         <button
           onClick={shareList}
@@ -176,7 +181,7 @@ export default function ListPage({ list }: ListPageProps) {
         onDragEnd={onDragEnd}
         onDragUpdate={onDragUpdate}
       >
-        <ul className="grow overflow-auto px-4">
+        <ul className="grow overflow-auto px-4 pt-2" ref={listRef} id="list">
           {data.categories.map((category) => (
             <Category
               key={category.id}

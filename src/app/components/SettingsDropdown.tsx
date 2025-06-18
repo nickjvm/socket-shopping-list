@@ -1,10 +1,12 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
+
 import { FiMoon, FiPlusSquare, FiSun } from "react-icons/fi";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { LuEye, LuEyeOff } from "react-icons/lu";
-import { useShoppingList } from "../providers";
-import Link from "next/link";
+
+import { useShoppingList } from "@/app/providers/ShoppingList";
 
 export default function SettingsDropdown() {
   const { setTheme, resolvedTheme } = useTheme();

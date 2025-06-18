@@ -111,7 +111,7 @@ export const ShoppingListProvider = ({
       socket.on("items:retrieved", setItems);
 
       socket.on("item:added", (item: Item) => {
-        setItems((prev) => [...prev, item]);
+        setItems((prev) => [...prev, item].filter((i) => i.id));
       });
 
       socket.on("item:completed", (itemId: string) => {
@@ -147,7 +147,6 @@ export const ShoppingListProvider = ({
     }
 
     function onDisconnect() {
-      console.log("Disconnected from socket");
       socket.removeAllListeners("items:retrieved");
       socket.removeAllListeners("item:added");
       socket.removeAllListeners("item:completed");
@@ -179,6 +178,7 @@ export const ShoppingListProvider = ({
       quantity: quantity || 1,
       details: details || "",
     };
+    setItems((prev) => [...prev, newItem as Item]);
     socket.emit("item:add", newItem);
   };
 

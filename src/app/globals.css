@@ -32,11 +32,11 @@ body {
 }
 
 .without-ring:focus:not(:focus-visible) {
-  @apply focus:ring-0 focus:ring-offset-0;
+  @apply ring-0 border-0 outline-none;
 }
 
 .without-ring:focus-visible {
-  @apply ring-2 ring-offset-2;
+  @apply ring-0 border-0 outline-none;
 }
 
 [type="checkbox"]:focus:not(:focus-visible) {

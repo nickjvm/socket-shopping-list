@@ -32,12 +32,14 @@ export default function Item({ item, onExpand, index }: ItemProps) {
         if (ul && itemRef.current) {
           const itemRect = itemRef.current.getBoundingClientRect();
           const ulRect = ul.getBoundingClientRect();
-          const offset =
-            itemRect.top -
-            ulRect.top -
-            ul.clientHeight / 2 +
-            itemRect.height / 2;
-          ul.scrollBy({ top: offset, behavior: "smooth" });
+          if (itemRect.top < 0 || itemRect.bottom > ulRect.bottom) {
+            const offset =
+              itemRect.top -
+              ulRect.top -
+              ul.clientHeight / 2 +
+              itemRect.height / 2;
+            ul.scrollBy({ top: offset, behavior: "smooth" });
+          }
         }
       }
     };
@@ -57,7 +59,7 @@ export default function Item({ item, onExpand, index }: ItemProps) {
       setPendingCompletion(true);
       timeout.current = setTimeout(() => {
         completeItem(id);
-      }, 5000);
+      }, 3000);
     }
   };
 
@@ -70,10 +72,13 @@ export default function Item({ item, onExpand, index }: ItemProps) {
   }, [completedAt]);
 
   return (
-    <Draggable draggableId={item.id} index={index} key={id}>
+    <Draggable
+      draggableId={item.id || index + ""}
+      index={index}
+      key={id || index}
+    >
       {(provided) => (
         <li
-          key={id}
           {...provided.draggableProps}
           ref={(el) => {
             itemRef.current = el;
@@ -110,7 +115,7 @@ export default function Item({ item, onExpand, index }: ItemProps) {
                 type="checkbox"
                 name={id}
                 onChange={handleToggle}
-                className="mt-[5px]"
+                className="mt-[5px] hidden"
                 checked={checked}
               />
               Mark {name} completed
@@ -180,17 +185,18 @@ export default function Item({ item, onExpand, index }: ItemProps) {
               </div>
             )}
           </div>
-          {isFocused && (
-            <button
-              onClick={() => {
-                onExpand(item);
-                setIsFocused(false);
-              }}
-              className="cursor-pointer"
-            >
-              <IoIosInformationCircleOutline className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={() => {
+              onExpand(item);
+              setIsFocused(false);
+            }}
+            className={cn(
+              "cursor-pointer opacity-20 group-hover:opacity-100 transition-opacity",
+              isFocused && "opacity-100"
+            )}
+          >
+            <IoIosInformationCircleOutline className="w-5 h-5" />
+          </button>
         </li>
       )}
     </Draggable>

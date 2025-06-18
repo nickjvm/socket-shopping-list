@@ -6,12 +6,15 @@ import { useEffect, useState } from "react";
 type InputProps = {
   label: string;
   inputClassName?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  labelHidden?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement> &
+  React.RefAttributes<HTMLInputElement>;
 
 export default function Input({
   label,
   className,
   inputClassName,
+  labelHidden,
   ...props
 }: InputProps) {
   const [value, setValue] = useState(props.value || props.defaultValue || "");
@@ -44,6 +47,7 @@ export default function Input({
         className={cn(
           "rounded absolute top-0 transform translate-y-[-50%]  px-1 transition-all duration-200",
           "-translate-y-1/2 pl-4 left-0",
+          labelHidden && "sr-only",
           props.id || props.name ? "pointer-events-none" : "cursor-pointer",
           props.placeholder || focused || value
             ? "text-sm top-0 w-auto bg-white dark:bg-slate-900 pl-2 left-2"

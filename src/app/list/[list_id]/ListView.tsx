@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { add as addHistory } from "@/store/historySlice";
 import { addNotification } from "@/store/notificationsSlice";
 import { AppDispatch } from "@/store";
+import Input from "@/app/components/Input";
 
 type ListPageProps = {
   list: {
@@ -187,7 +188,11 @@ export default function ListPage({ list }: ListPageProps) {
         onDragEnd={onDragEnd}
         onDragUpdate={onDragUpdate}
       >
-        <ul className="grow overflow-auto px-4 pt-2" ref={listRef} id="list">
+        <ul
+          className="grow overflow-auto px-4 pt-2 space-y-2"
+          ref={listRef}
+          id="list"
+        >
           {data.categories.map((category) => (
             <Category
               key={category.id}
@@ -208,14 +213,14 @@ export default function ListPage({ list }: ListPageProps) {
           (e.target as HTMLFormElement).reset();
         }}
       >
-        <input
+        <Input
           type="text"
           name="item"
           autoFocus
           autoComplete="off"
+          label="Add an item"
           autoCorrect="off"
-          placeholder="Add an item..."
-          className="border border-gray-500 rounded w-full px-4 py-2 dark:bg-slate-800"
+          className="w-full"
         />
         <button
           type="button"

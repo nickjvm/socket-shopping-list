@@ -19,9 +19,15 @@ app.prepare().then(() => {
   const io = new Server(httpServer);
 
   io.on("connection", (socket) => {
-    console.log("A user connected");
     let room: string;
+    socket.on("list:disconnect", (id) => {
+      console.log("A user disconnected from", id);
+      socket.leave(room);
+      room = "";
+      socket.emit("list:disconnected", id);
+    });
     socket.on("list:connect", async (id) => {
+      console.log("A user connected to", id);
       room = id;
       socket.join(id);
       const rows = await db
@@ -29,13 +35,13 @@ app.prepare().then(() => {
         .from(items)
         .where(eq(items.listId, id))
         .orderBy(items.index);
+      socket.emit("list:connected", id);
       socket.emit("items:retrieved", rows);
     });
 
     socket.on(
       "list:sort",
       async (listItems: { id: string; index: number; category: string }[]) => {
-        console.log("list:sort", listItems);
         const indexSqlChunks: SQL[] = [];
         const categorySqlChunks: SQL[] = [];
         const ids: string[] = [];

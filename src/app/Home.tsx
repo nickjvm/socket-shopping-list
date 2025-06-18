@@ -37,7 +37,6 @@ export default function Home({ history: serverHistory }: HomeProps) {
     try {
       response = await createList(new FormData(form));
     } catch (error) {
-      console.log(error);
       const message =
         error instanceof Error ? error.message : "Failed to create list.";
       nameInput.setCustomValidity(message);

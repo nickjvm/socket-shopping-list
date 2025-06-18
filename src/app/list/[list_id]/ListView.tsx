@@ -10,7 +10,7 @@ import { useShoppingList } from "@/app/providers/ShoppingList";
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
 import Category from "@/app/components/Category";
 import { useDispatch } from "react-redux";
-import { add } from "@/store/historySlice";
+import { add as addHistory } from "@/store/historySlice";
 import { addNotification } from "@/store/notificationsSlice";
 import { AppDispatch } from "@/store";
 
@@ -23,7 +23,7 @@ type ListPageProps = {
 };
 
 export default function ListPage({ list }: ListPageProps) {
-  const { addItem, data, connectToList, setItems } = useShoppingList();
+  const { addItem, data, setItems } = useShoppingList();
   const dispatch = useDispatch<AppDispatch>();
 
   const [modalContext, setModalContext] = useState<
@@ -36,8 +36,7 @@ export default function ListPage({ list }: ListPageProps) {
     }
 
     function onConnect() {
-      connectToList(list.id);
-      dispatch(add({ id: list.id, name: list.name }));
+      dispatch(addHistory({ id: list.id, name: list.name }));
     }
 
     function onDisconnect() {
@@ -57,11 +56,12 @@ export default function ListPage({ list }: ListPageProps) {
     });
 
     return () => {
+      socket.removeAllListeners("item:categorized");
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [list.id]);
+  }, []);
 
   const listRef = useRef<HTMLUListElement>(null);
 

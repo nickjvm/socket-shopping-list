@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { CATEGORIES } from "../constants";
 import { socket } from "@/socket";
+import { useParams } from "next/navigation";
 
 type ShoppingListData = {
   categories: Category[];
@@ -32,6 +33,37 @@ export const ShoppingListProvider = ({
 }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
+  const params = useParams();
+  const listId = useRef<string | null>((params.list_id as string) || null);
+
+  useEffect(() => {
+    function onConnect() {
+      if (listId.current && params.list_id !== listId.current) {
+        disconnectFromList(listId.current);
+      }
+
+      connectToList(params.list_id as string);
+      listId.current = (params.list_id as string) || null;
+    }
+
+    function onDisconnect() {
+      if (listId.current) {
+        disconnectFromList(listId.current);
+        listId.current = null;
+      }
+    }
+
+    if (socket.connected) {
+      onConnect();
+    }
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, [params.list_id]);
 
   useEffect(() => {
     setShowCompleted(localStorage.getItem("showCompleted") === "true");
@@ -63,6 +95,10 @@ export const ShoppingListProvider = ({
     socket.emit("list:connect", listId);
   }
 
+  function disconnectFromList(listId: string) {
+    socket.emit("list:disconnect", listId);
+  }
+
   useEffect(() => {
     if (socket.connected) {
       onConnect();
@@ -70,6 +106,8 @@ export const ShoppingListProvider = ({
 
     function onConnect() {
       socket.emit("hello");
+      socket.onAny(console.log);
+
       socket.on("items:retrieved", setItems);
 
       socket.on("item:added", (item: Item) => {
@@ -116,12 +154,14 @@ export const ShoppingListProvider = ({
       socket.removeAllListeners("item:uncompleted");
       socket.removeAllListeners("item:deleted");
       socket.removeAllListeners("item:updated");
+      socket.offAny();
     }
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
     return () => {
+      onDisconnect();
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };

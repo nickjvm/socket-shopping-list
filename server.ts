@@ -8,8 +8,10 @@ import db from "./src/db/index.js";
 import { items } from "./drizzle/schema.js";
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
-const port = 3000;
+const hostname = dev ? "localhost" : "0.0.0.0";
+
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();

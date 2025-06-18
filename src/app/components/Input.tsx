@@ -1,7 +1,7 @@
 "use client";
 
 import cn from "@/utils/cn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type InputProps = {
   label: string;
@@ -16,6 +16,13 @@ export default function Input({
 }: InputProps) {
   const [value, setValue] = useState(props.value || props.defaultValue || "");
   const [focused, setFocused] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (props.autoFocus) {
+      setFocused(true);
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setFocused(true);

@@ -10,6 +10,8 @@ import { useShoppingList } from "@/app/providers/ShoppingList";
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
 import Category from "@/app/components/Category";
 import { useNotifications } from "@/app/providers/Notifications";
+import { useDispatch } from "react-redux";
+import { add } from "@/store/historySlice";
 
 type ListPageProps = {
   list: {
@@ -22,6 +24,8 @@ type ListPageProps = {
 export default function ListPage({ list }: ListPageProps) {
   const { addItem, data, connectToList, setItems } = useShoppingList();
   const { addNotification } = useNotifications();
+  const dispatch = useDispatch();
+
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
   >(null);
@@ -33,11 +37,7 @@ export default function ListPage({ list }: ListPageProps) {
 
     function onConnect() {
       connectToList(list.id);
-      const history = window.localStorage.getItem("history")?.split(",") || [];
-      window.localStorage.setItem(
-        "history",
-        [...new Set([list.id, ...history])].join(",")
-      );
+      dispatch(add({ id: list.id, name: list.name }));
     }
 
     function onDisconnect() {

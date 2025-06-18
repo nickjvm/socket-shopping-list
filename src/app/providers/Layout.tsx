@@ -35,8 +35,10 @@ export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    dispatch(getHistory());
-  }, [params.list_id, dispatch]);
+    if (!history.length) {
+      dispatch(getHistory());
+    }
+  }, [params.list_id, dispatch, history.length]);
 
   useEffect(() => {
     setNavOpen(false);

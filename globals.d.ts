@@ -1,3 +1,9 @@
+type List = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
 type Item = {
   id: string;
   name: string;

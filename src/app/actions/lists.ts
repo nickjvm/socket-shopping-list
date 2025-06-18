@@ -1,21 +1,35 @@
 "use server";
 
 import { v4 as uuid } from "uuid";
-import { redirect } from "next/navigation";
 
 import db from "@/db";
 import { items, lists } from "@/../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 
-export async function createList(formData: FormData) {
+export type Response<T> = {
+  status: number;
+  message: string;
+  data?: T;
+};
+export async function createList(formData: FormData): Promise<Response<List>> {
+  const name = (formData.get("name") as string)?.trim();
+  if (!name) {
+    throw new Error("List name is required");
+  }
   const id = uuid();
+  const list = await db
+    .insert(lists)
+    .values({
+      id,
+      name: formData.get("name") as string,
+    })
+    .returning();
 
-  await db.insert(lists).values({
-    id,
-    name: formData.get("name") as string,
-  });
-
-  redirect(`/list/${id}`);
+  return {
+    status: 200,
+    message: "List created successfully",
+    data: list[0],
+  };
 }
 
 export async function fetchList(listId: string) {

@@ -6,20 +6,64 @@ import { FiArrowRight } from "react-icons/fi";
 import { IoIosClose } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 
-import { createList } from "@/app/actions/lists";
+import { createList, Response } from "@/app/actions/lists";
 import { AppDispatch, RootState } from "@/store";
-import { remove } from "@/store/historySlice";
+import { ListHistoryItem, remove } from "@/store/historySlice";
+import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  const { history } = useSelector((state: RootState) => state.history);
+type HomeProps = {
+  history: ListHistoryItem[];
+};
+export default function Home({ history: serverHistory }: HomeProps) {
+  const { history: clientHistory } = useSelector(
+    (state: RootState) => state.history
+  );
   const dispatch = useDispatch<AppDispatch>();
+
+  const [history, setHistory] = useState<ListHistoryItem[]>(serverHistory);
+
+  useEffect(() => {
+    setHistory(clientHistory);
+  }, [clientHistory]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const nameInput = form.elements.namedItem("name") as HTMLInputElement;
+    nameInput.setCustomValidity("");
+
+    let response: Response<List> | null = null;
+    try {
+      response = await createList(new FormData(form));
+    } catch (error) {
+      console.log(error);
+      const message =
+        error instanceof Error ? error.message : "Failed to create list.";
+      nameInput.setCustomValidity(message);
+      nameInput.reportValidity();
+      return;
+    } finally {
+      if (response?.status === 200) {
+        redirect(`/list/${response?.data?.id}`);
+      }
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4 p-4">
-      <form action={createList} className="w-full max-w-xl">
+      <form className="w-full max-w-xl" onSubmit={handleSubmit}>
         <h1 className="text-2xl mb-4">Create a Shopping List</h1>
         <div className="flex gap-2">
-          <Input autoFocus label="List Name" name="name" className="w-full" />
+          <Input
+            autoFocus
+            label="List Name"
+            name="name"
+            className="w-full"
+            onInput={(e) =>
+              (e.target as HTMLInputElement).setCustomValidity("")
+            }
+          />
           <button
             type="submit"
             className="cursor-pointer px-4 py-2 bg-slate-500 rounded-md text-white hover:bg-slate-600 focus-visible:bg-slate-600 transition-colors flex items-center justify-center"

@@ -174,7 +174,7 @@ export default function ListPage({ list }: ListPageProps) {
   return (
     <div className="flex flex-col h-screen">
       <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300">
-        <h1 className="text-2xl font-bold">{list.name}</h1>
+        <h1 className="text-2xl font-bold ml-3">{list.name}</h1>
         <button
           onClick={shareList}
           className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 p-2 rounded transition-colors"

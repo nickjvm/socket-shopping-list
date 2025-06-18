@@ -17,7 +17,7 @@ export default function Category({ setModalContext, category }: CategoryProps) {
 
   return (
     <li>
-      <h2 className="text-xl font-bold -ml-2">{category.name}</h2>
+      <h2 className="text-xl font-bold ml-3">{category.name}</h2>
       <Droppable droppableId={category.id}>
         {(provided) => (
           <ul

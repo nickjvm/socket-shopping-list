@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
-import { IoIosInformationCircleOutline } from "react-icons/io";
+import { IoIosCheckmark, IoIosInformationCircleOutline } from "react-icons/io";
 import { RxDragHandleDots2 } from "react-icons/rx";
 
 import cn from "@/utils/cn";
@@ -20,6 +20,7 @@ export default function Item({ item, onExpand, index }: ItemProps) {
   const { completeItem, uncompleteItem, updateItem } = useShoppingList();
   const { id, completedAt, name } = item;
 
+  const checked = !!completedAt || isPendingCompletion;
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const itemRef = useRef<HTMLLIElement>(null);
 
@@ -81,25 +82,40 @@ export default function Item({ item, onExpand, index }: ItemProps) {
           className={cn(
             isPendingCompletion && "opacity-50",
             completedAt && "opacity-50 line-through italic",
-            "flex gap-2 py-1 items-start group"
+            "flex gap-2 py-1 group items-start"
           )}
         >
           <div
             {...provided.dragHandleProps}
             className={cn(
-              "mt-1 -ml-3 opacity-50 group-hover:opacity-100 transition-opacity"
+              "-ml-3 opacity-30  group-hover:opacity-100 transition-opacity mt-1"
             )}
           >
             <RxDragHandleDots2 />
           </div>
-          <input
-            type="checkbox"
-            name={id}
-            onChange={handleToggle}
-            className="mt-[5px]"
-            checked={!!completedAt || isPendingCompletion}
-          />
-          <label className="sr-only">Mark {name} completed</label>
+          <label className="min-w-5 h-5 cursor-pointer mt-[1.5px]">
+            <div
+              className={cn(
+                "rounded-full border border-slate-600 w-5 h-5 relative bg-white dark:bg-slate-900",
+                checked &&
+                  "bg-slate-900 border-slate-900 text-white dark:bg-white dark:text-slate-800 dark:border-white"
+              )}
+            >
+              {checked && (
+                <IoIosCheckmark className=" w-7 h-7 absolute top-1/2 left-1/2 -translate-1/2" />
+              )}
+            </div>
+            <span className="sr-only">
+              <input
+                type="checkbox"
+                name={id}
+                onChange={handleToggle}
+                className="mt-[5px]"
+                checked={checked}
+              />
+              Mark {name} completed
+            </span>
+          </label>
           <div className="grow flex gap-x-1 flex-wrap">
             <div className="flex items-center gap-1 flex-nowrap w-full">
               <div

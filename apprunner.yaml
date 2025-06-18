@@ -19,11 +19,3 @@ run:
       value: "production"
     - name: PORT
       value: "3000"
-
-# Optional health check
-health-check:
-  path: "/api/health"
-  interval: 10
-  timeout: 5
-  healthy-threshold: 3
-  unhealthy-threshold: 5

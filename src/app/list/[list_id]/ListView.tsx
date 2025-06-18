@@ -9,9 +9,10 @@ import { useShoppingList } from "@/app/providers/ShoppingList";
 
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
 import Category from "@/app/components/Category";
-import { useNotifications } from "@/app/providers/Notifications";
 import { useDispatch } from "react-redux";
 import { add } from "@/store/historySlice";
+import { addNotification } from "@/store/notificationsSlice";
+import { AppDispatch } from "@/store";
 
 type ListPageProps = {
   list: {
@@ -23,8 +24,7 @@ type ListPageProps = {
 
 export default function ListPage({ list }: ListPageProps) {
   const { addItem, data, connectToList, setItems } = useShoppingList();
-  const { addNotification } = useNotifications();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
@@ -47,7 +47,13 @@ export default function ListPage({ list }: ListPageProps) {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("item:categorized", ({ category }) => {
-      addNotification(`Moved to ${category}`, "info", 3000);
+      dispatch(
+        addNotification({
+          message: `Moved to ${category}`,
+          type: "info",
+          timeout: 3000,
+        })
+      );
     });
 
     return () => {

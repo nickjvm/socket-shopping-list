@@ -33,6 +33,18 @@ export const ShoppingListProvider = ({
   const [items, setItems] = useState<Item[]>([]);
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
 
+  useEffect(() => {
+    setShowCompleted(localStorage.getItem("showCompleted") === "true");
+  }, []);
+
+  useEffect(() => {
+    if (showCompleted) {
+      localStorage.setItem("showCompleted", "true");
+    } else {
+      localStorage.removeItem("showCompleted");
+    }
+  }, [showCompleted]);
+
   const data: ShoppingListData = {
     categories: CATEGORIES.filter((c) =>
       items.some(

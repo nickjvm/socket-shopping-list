@@ -49,7 +49,6 @@ const historySlice = createSlice({
   initialState,
   reducers: {
     remove(state, action: PayloadAction<string>) {
-      console.log(action);
       state.history = state.history.filter(
         (list) => list.id !== action.payload
       );

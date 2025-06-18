@@ -47,7 +47,6 @@ export const ShoppingListProvider = ({
     items: items,
   };
 
-  console.log(data);
   function connectToList(listId: string) {
     socket.emit("list:connect", listId);
   }

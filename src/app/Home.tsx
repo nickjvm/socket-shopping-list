@@ -1,23 +1,18 @@
 "use client";
 
 import Input from "./components/Input";
-import { createList } from "./actions/lists";
 import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
 import { IoIosClose } from "react-icons/io";
-import { useListHistory } from "./hooks/useListHistory";
-import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { createList } from "@/app/actions/lists";
+import { AppDispatch, RootState } from "@/store";
+import { remove } from "@/store/historySlice";
 
 export default function Home() {
-  const {
-    history,
-    remove: deleteFromHistory,
-    get: getHistory,
-  } = useListHistory();
-
-  useEffect(() => {
-    getHistory();
-  }, []);
+  const { history } = useSelector((state: RootState) => state.history);
+  const dispatch = useDispatch<AppDispatch>();
 
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4 p-4">
@@ -53,7 +48,7 @@ export default function Home() {
                 </Link>
                 <button
                   className="opacity-0 group-hover:opacity-100 transition-all text-slate-400 cursor-pointer hover:text-slate-800"
-                  onClick={() => deleteFromHistory(list.id)}
+                  onClick={() => dispatch(remove(list.id))}
                 >
                   <IoIosClose className="w-6 h-6" />
                 </button>

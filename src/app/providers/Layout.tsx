@@ -1,3 +1,4 @@
+import { useSelector, useDispatch } from "react-redux";
 import { createContext, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -8,10 +9,11 @@ import { IoIosClose } from "react-icons/io";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 import ThemeSwitch from "@/app/components/ThemeSwitch";
-import { useListHistory } from "@/app/hooks/useListHistory";
 import { useShoppingList } from "@/app/providers/ShoppingList";
 
 import cn from "@/utils/cn";
+import { AppDispatch, RootState } from "@/store";
+import { getHistory, remove } from "@/store/historySlice";
 
 type LayoutContextType = {
   navOpen: boolean;
@@ -21,8 +23,9 @@ type LayoutContextType = {
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { history } = useSelector((state: RootState) => state.history);
   const [navOpen, setNavOpen] = useState<boolean>(false);
-  const { history, remove, get: getHistory } = useListHistory();
   const pathname = usePathname();
   const params = useParams();
   const { showCompleted, setShowCompleted } = useShoppingList();
@@ -32,8 +35,8 @@ export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    getHistory();
-  }, [params.list_id]);
+    dispatch(getHistory());
+  }, [params.list_id, dispatch]);
 
   useEffect(() => {
     setNavOpen(false);
@@ -75,7 +78,7 @@ export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
                       </Link>
                       <button
                         className="opacity-0 group-hover:opacity-100 transition-all text-slate-400 cursor-pointer hover:text-slate-800 "
-                        onClick={() => remove(list.id)}
+                        onClick={() => dispatch(remove(list.id))}
                       >
                         <IoIosClose className="w-6 h-6" />
                       </button>

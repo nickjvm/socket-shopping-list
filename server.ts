@@ -13,7 +13,7 @@ const hostname = dev ? "localhost" : "0.0.0.0";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port });
+const app = next({ dev, hostname, port, turbo: true });
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {

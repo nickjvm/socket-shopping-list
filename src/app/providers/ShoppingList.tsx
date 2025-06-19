@@ -37,6 +37,9 @@ export const ShoppingListProvider = ({
   const listId = useRef<string | null>((params.list_id as string) || null);
 
   useEffect(() => {
+    if (listId.current && params.list_id !== listId.current) {
+      setItems([]);
+    }
     function onConnect() {
       if (listId.current && params.list_id !== listId.current) {
         disconnectFromList(listId.current);

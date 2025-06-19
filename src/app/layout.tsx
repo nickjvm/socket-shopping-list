@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 
 import { Geist, Geist_Mono } from "next/font/google";
@@ -25,6 +25,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "⚡️ Socket Shopping List",
   description: "A Next.js / Socket.IO app by Nick VanMeter",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
 };
 
 export default async function RootLayout({

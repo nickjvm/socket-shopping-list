@@ -16,6 +16,7 @@ run:
       value: "production"
     - name: PORT
       value: "3000"
+  secrets: 
     - name: TURSO_DATABASE_URL
       value-from: "arn:aws:secretsmanager:us-west-2:465631958128:secret:prod/SocketShoppingList/envs-4QXVfA:TURSO_DATABASE_URL::" 
     - name: TURSO_AUTH_TOKEN

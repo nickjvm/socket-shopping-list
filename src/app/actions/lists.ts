@@ -32,6 +32,28 @@ export async function createList(formData: FormData): Promise<Response<List>> {
   };
 }
 
+export async function renameList(
+  listId: string,
+  name: string
+): Promise<Response<List>> {
+  if (!name && !name.trim()) {
+    throw new Error("List name is required");
+  }
+  const list = await db
+    .update(lists)
+    .set({
+      name,
+    })
+    .where(eq(lists.id, listId))
+    .returning();
+
+  return {
+    status: 200,
+    message: "List renamed successfully",
+    data: list[0],
+  };
+}
+
 export async function fetchList(listId: string) {
   const results = await db
     .select({

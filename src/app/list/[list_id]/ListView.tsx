@@ -10,10 +10,12 @@ import { useShoppingList } from "@/app/providers/ShoppingList";
 import DetailsModal, { DetailsModalProps } from "@/app/components/DetailsModal";
 import Category from "@/app/components/Category";
 import { useDispatch } from "react-redux";
-import { add as addHistory } from "@/store/historySlice";
+import { add as addHistory, getHistory } from "@/store/historySlice";
 import { addNotification } from "@/store/notificationsSlice";
 import { AppDispatch } from "@/store";
 import Input from "@/app/components/Input";
+import EditableHeading from "@/app/components/EditableHeading";
+import { renameList } from "@/app/actions/lists";
 
 type ListPageProps = {
   list: {
@@ -26,7 +28,7 @@ type ListPageProps = {
 export default function ListPage({ list }: ListPageProps) {
   const { addItem, data, setItems } = useShoppingList();
   const dispatch = useDispatch<AppDispatch>();
-
+  const [listName, setListName] = useState(list.name);
   const [modalContext, setModalContext] = useState<
     DetailsModalProps["data"] | null
   >(null);
@@ -46,6 +48,12 @@ export default function ListPage({ list }: ListPageProps) {
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("list:renamed", ({ id, name }) => {
+      if (id === list.id) {
+        setListName(name);
+      }
+      dispatch(getHistory());
+    });
     socket.on("item:categorized", ({ category }) => {
       dispatch(
         addNotification({
@@ -175,7 +183,25 @@ export default function ListPage({ list }: ListPageProps) {
   return (
     <div className="flex flex-col h-screen">
       <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300">
-        <h1 className="text-2xl font-bold ml-3">{list.name}</h1>
+        <EditableHeading
+          text={listName}
+          onChange={async (name) => {
+            await renameList(list.id, name);
+            setListName(name);
+            dispatch(
+              addNotification({
+                message: `List renamed to ${name}`,
+                type: "info",
+                timeout: 3000,
+              })
+            );
+            dispatch(getHistory());
+            socket.emit("list:rename", {
+              id: list.id,
+              name,
+            });
+          }}
+        />
         <button
           onClick={shareList}
           className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 p-2 rounded transition-colors"

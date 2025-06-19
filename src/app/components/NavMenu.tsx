@@ -95,9 +95,16 @@ export default function NavMenu() {
               <FiPlusSquare />
               New List
             </Link>
-            <ThemeSwitch />
+            <ThemeSwitch
+              onClick={() => {
+                dispatch(setSidebarOpen(false));
+              }}
+            />
             <button
-              onClick={() => setShowCompleted(!showCompleted)}
+              onClick={() => {
+                setShowCompleted(!showCompleted);
+                dispatch(setSidebarOpen(false));
+              }}
               className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 hover:bg-white dark:hover:bg-slate-600 transition-colors"
             >
               {showCompleted ? <LuEyeOff /> : <LuEye />}

@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark:bg-slate-900 dark:text-white`}
       >
         <Providers>
-          <div id="layout" className="flex h-screen relative overflow-hidden">
+          <div id="layout" className="flex h-full relative overflow-hidden">
             <div className="grow">{children}</div>
             <NavMenu />
             <Notifications />

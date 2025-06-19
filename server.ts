@@ -12,21 +12,11 @@ const hostname = dev ? "localhost" : "0.0.0.0";
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-console.log(
-  "[Runtime, pre app.prepare] Environment Variables:",
-  process.env.TURSO_DATABASE_URL
-);
-
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port, turbo: true });
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
-  console.log(
-    "[Runtime, in app.prepare] Environment Variables:",
-    process.env.TURSO_DATABASE_URL
-  );
-
   const httpServer = createServer(handler);
   const io = new Server(httpServer);
 
@@ -38,6 +28,7 @@ app.prepare().then(() => {
       room = "";
       socket.emit("list:disconnected", id);
     });
+
     socket.on("list:connect", async (id) => {
       console.log("A user connected to", id);
       room = id;
@@ -96,6 +87,10 @@ app.prepare().then(() => {
         .where(eq(items.id, itemId));
 
       io.to(room).emit("item:completed", itemId);
+    });
+
+    socket.on("list:rename", async ({ id, name }) => {
+      socket.to(room).emit("list:renamed", { id, name });
     });
 
     socket.on("item:uncomplete", async (itemId) => {

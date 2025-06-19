@@ -1,15 +1,22 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+
 import historyReducer from "./historySlice";
 import layoutReducer from "./layoutSlice";
 import notificationsReducer from "./notificationsSlice";
 
-export const store = configureStore({
-  reducer: {
-    history: historyReducer,
-    layout: layoutReducer,
-    notifications: notificationsReducer,
-  },
+const rootReducer = combineReducers({
+  history: historyReducer,
+  layout: layoutReducer,
+  notifications: notificationsReducer,
 });
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof rootReducer>;
+
+export function makeStore(preloadedState?: Partial<RootState>) {
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState,
+  });
+}
+
+export type AppDispatch = ReturnType<typeof makeStore>["dispatch"];

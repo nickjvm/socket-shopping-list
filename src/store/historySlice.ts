@@ -11,7 +11,7 @@ export interface HistoryState {
   pending: boolean;
 }
 
-const HISTORY_KEY = "history";
+export const HISTORY_KEY = "history";
 
 const initialState: HistoryState = {
   history: [],

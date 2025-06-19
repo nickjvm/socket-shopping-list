@@ -16,6 +16,7 @@ export default function EditableHeading({
   const textRef = useRef(text);
 
   const beginEditing = () => {
+    if (editing) return; // Prevent re-entrance if already editing
     setEditing(true);
     setTimeout(() => {
       if (inputRef.current) {

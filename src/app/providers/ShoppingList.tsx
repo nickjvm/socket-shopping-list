@@ -42,8 +42,10 @@ export const ShoppingListProvider = ({
         disconnectFromList(listId.current);
       }
 
-      connectToList(params.list_id as string);
-      listId.current = (params.list_id as string) || null;
+      if (params.list_id) {
+        connectToList(params.list_id as string);
+        listId.current = (params.list_id as string) || null;
+      }
     }
 
     function onDisconnect() {

@@ -5,15 +5,19 @@ import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
 
 import { ShoppingListProvider } from "@/app/providers/ShoppingList";
-import { Provider } from "react-redux";
-import { store } from "@/store";
+import { ReduxProvider } from "./ReduxProvider";
+import { RootState } from "@/store";
 
-export function Providers({ children }: { children: ReactNode }) {
+type ProvidersProps = {
+  preloadedState?: Partial<RootState>;
+  children: ReactNode;
+};
+export function Providers({ children, preloadedState }: ProvidersProps) {
   return (
-    <Provider store={store}>
+    <ReduxProvider preloadedState={preloadedState}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <ShoppingListProvider>{children}</ShoppingListProvider>
       </ThemeProvider>
-    </Provider>
+    </ReduxProvider>
   );
 }

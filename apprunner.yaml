@@ -5,6 +5,7 @@ build:
     pre-build:
       - npm ci
     build:
+      - node scripts/generate-env.js
       - npm run build
 run:
   command: npm run start

@@ -1,7 +1,7 @@
 type List = {
   id: string;
   name: string;
-  createdAt: string;
+  createdAt: number;
 };
 
 type Item = {
@@ -10,8 +10,8 @@ type Item = {
   category?: string;
   quantity: number;
   details?: string | null;
-  createdAt: string;
-  completedAt: string | null;
+  createdAt: number;
+  completedAt: number | null;
   index: number;
 };
 

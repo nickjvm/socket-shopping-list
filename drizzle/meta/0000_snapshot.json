@@ -1,74 +1,83 @@
 {
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
   "version": "6",
   "dialect": "sqlite",
-  "id": "47f37b4e-aa77-4876-aa2a-f3afa9c00fd2",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "items": {
       "name": "items",
       "columns": {
         "id": {
+          "autoincrement": false,
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "list_id": {
+          "autoincrement": false,
           "name": "list_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
+          "autoincrement": false,
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "category": {
+          "default": "'Other'",
+          "autoincrement": false,
           "name": "category",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'Other'"
+          "notNull": true
         },
         "quantity": {
+          "default": 1,
+          "autoincrement": false,
           "name": "quantity",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 1
+          "notNull": true
         },
         "details": {
+          "default": "(NULL)",
+          "autoincrement": false,
           "name": "details",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'sql`(NULL)`'"
+          "notNull": false
         },
         "completedAt": {
-          "name": "completedAt",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
+          "default": "(NULL)",
           "autoincrement": false,
-          "default": "(NULL)"
+          "name": "completedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "createdAt": {
-          "name": "createdAt",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
+          "default": "(strftime('%s','now'))",
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "index": {
+          "default": 999999999,
+          "autoincrement": false,
+          "name": "index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
+      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {
         "items_list_id_lists_id_fk": {
@@ -85,7 +94,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -93,31 +101,31 @@
       "name": "lists",
       "columns": {
         "id": {
+          "autoincrement": false,
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
+          "autoincrement": false,
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true
         },
         "createdAt": {
-          "name": "createdAt",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
+          "default": "(strftime('%s','now'))",
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
+      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     }
@@ -128,8 +136,5 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  },
-  "internal": {
-    "indexes": {}
   }
 }

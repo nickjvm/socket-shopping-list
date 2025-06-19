@@ -83,7 +83,7 @@ app.prepare().then(() => {
     socket.on("item:complete", async (itemId) => {
       await db
         .update(items)
-        .set({ completedAt: Date.now().toString() })
+        .set({ completedAt: Date.now() })
         .where(eq(items.id, itemId));
 
       io.to(room).emit("item:completed", itemId);
@@ -127,7 +127,7 @@ app.prepare().then(() => {
           id: uuid(),
           name,
           category: category || "Other",
-          createdAt: Date.now().toString(),
+          createdAt: Date.now(),
           quantity: quantity || 1,
           details,
           listId: room,

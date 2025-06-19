@@ -3,6 +3,7 @@ import { faker } from "@faker-js/faker";
 
 import db from "./index.js";
 import { items, lists } from "../../drizzle/schema.js";
+import { CATEGORIES } from "../app/constants.js";
 
 async function main() {
   const listIds = [uuid(), uuid()];
@@ -11,6 +12,7 @@ async function main() {
     listIds.map((id) => ({
       id,
       name: faker.commerce.department(),
+      createdAt: faker.date.past().getTime(),
     }))
   );
 
@@ -20,28 +22,16 @@ async function main() {
 
     const itemsData = Array.from({ length: itemCount }, () => ({
       id: uuid(),
+      listId,
       name: faker.commerce.productName(),
-      category: faker.helpers.arrayElement([
-        "Produce",
-        "Meat & Seafood",
-        "Bakery",
-        "Canned Goods",
-        "Beverages",
-        "Dairy",
-        "Snacks",
-        "Pantry Items",
-        "Frozen Foods",
-        "Household",
-        "Personal Care",
-        "Baby",
-        "Pet Care",
-        "Clothing",
-        "Other",
-      ]),
-      dateAdded: faker.date.past().getTime(),
+      category: faker.helpers.arrayElement(CATEGORIES),
+      createdAt: faker.date.past().getTime(),
       quantity: faker.number.int({ min: 1, max: 10 }),
       details: faker.lorem.sentence(),
-      listId,
+      completedAt: faker.datatype.boolean()
+        ? null
+        : faker.date.past().getTime(),
+      index: faker.number.int({ min: 0, max: 999999999 }),
     }));
 
     await db.insert(items).values(itemsData);

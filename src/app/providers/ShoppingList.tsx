@@ -122,9 +122,7 @@ export const ShoppingListProvider = ({
       socket.on("item:completed", (itemId: string) => {
         setItems((prev) =>
           prev.map((item) =>
-            item.id === itemId
-              ? { ...item, completedAt: Date.now().toString() }
-              : item
+            item.id === itemId ? { ...item, completedAt: Date.now() } : item
           )
         );
       });
@@ -193,7 +191,7 @@ export const ShoppingListProvider = ({
         item.id === id
           ? {
               ...item,
-              completedAt: item.completedAt ? null : Date.now().toString(),
+              completedAt: item.completedAt ? null : Date.now(),
             }
           : item
       )

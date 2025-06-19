@@ -1,1 +1,0 @@
-ALTER TABLE `items` ADD `index` integer DEFAULT 0 NOT NULL;

@@ -80,7 +80,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
               id="item"
               autoFocus
               defaultValue={data.item.name}
-              autoComplete="off"
+              spellCheck="false"
               autoCorrect="off"
               className="w-full"
             />

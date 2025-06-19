@@ -182,7 +182,7 @@ export default function ListPage({ list }: ListPageProps) {
   const onDragUpdate = () => {};
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300">
+      <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300 dark:border-slate-700">
         <EditableHeading
           text={listName}
           onChange={async (name) => {
@@ -242,8 +242,7 @@ export default function ListPage({ list }: ListPageProps) {
         <Input
           type="text"
           name="item"
-          autoFocus
-          autoComplete="off"
+          spellCheck="false"
           label="Add an item"
           autoCorrect="off"
           className="w-full"

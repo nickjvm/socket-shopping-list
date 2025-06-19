@@ -20,7 +20,7 @@ export default function Category({ setModalContext, category }: CategoryProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <li className="-mx-4 px-4 border-b border-slate-300 pb-2 last:border-0">
+    <li className="-mx-4 px-4 border-b border-slate-300 pb-2 dark:border-slate-700 last:border-0">
       <h2 className="text-xl font-bold ml-3">{category.name}</h2>
       <Droppable droppableId={category.id}>
         {(provided) => (

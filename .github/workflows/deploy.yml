@@ -27,7 +27,14 @@ jobs:
       - name: Build, tag and push Docker image
         env: 
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           IMAGE_TAG=latest
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker build \
+            --build-arg TURSO_DATABASE_URL=$TURSO_DATABASE_URL \
+            --build-arg TURSO_AUTH_TOKEN=$TURSO_AUTH_TOKEN \
+            --build-arg OPENAI_API_KEY=$OPENAI_API_KEY \
+            -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REPOSITORY:$IMAGE_TAG

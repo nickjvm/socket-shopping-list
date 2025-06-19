@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import db from "@/db";
 import { items, lists } from "@/../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
+import { notFound } from "next/navigation";
 
 export type Response<T> = {
   status: number;
@@ -64,6 +65,9 @@ export async function fetchList(listId: string) {
     .leftJoin(items, eq(lists.id, items.listId))
     .where(eq(lists.id, listId));
 
+  if (!results.length) {
+    notFound();
+  }
   // Group items by list
   const grouped = results.reduce<{
     list: typeof lists.$inferSelect | null;

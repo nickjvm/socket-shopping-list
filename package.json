@@ -3,6 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "A real-time collaborative shopping list application using Next.js, React, and Socket.IO.",
+  "keywords": [
+    "nextjs",
+    "react",
+    "socket.io",
+    "shopping-list",
+    "real-time",
+    "collaborative",
+    "app-runner"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/van5fh/socket-shopping-list/"
+  },
+  "bugs": {
+    "url": "https://github.com/van5fh/socket-shopping-list/issues"
+  },
+  "homepage": "https://eymmk3ch8n.us-west-2.awsapprunner.com/",
+  "author": "Nick VanMeter",
   "scripts": {
     "dev": "nodemon --exec node --loader ts-node/esm server.ts",
     "build": "next build",
@@ -50,5 +69,6 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5"
-  }
+  },
+  "license": "MIT"
 }

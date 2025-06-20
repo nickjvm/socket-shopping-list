@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { CATEGORIES } from "../constants";
 import { socket } from "@/socket";
 import { useParams } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { addNotification } from "@/store/notificationsSlice";
+import { AppDispatch } from "@/store";
 
 type ShoppingListData = {
   categories: Category[];
@@ -36,6 +39,7 @@ export const ShoppingListProvider = ({
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
   const params = useParams();
   const listId = useRef<string | null>((params.list_id as string) || null);
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (listId.current && params.list_id !== listId.current) {
@@ -92,7 +96,12 @@ export const ShoppingListProvider = ({
     ).map((c) => ({
       id: c,
       name: c,
-      items: items.filter((item) => item.category === c).map((item) => item.id),
+      items: items
+        .filter((item) => item.category === c)
+        .sort((a, b) => {
+          return a.index - b.index;
+        })
+        .map((item) => item.id),
     })),
     items: items,
   };
@@ -120,11 +129,9 @@ export const ShoppingListProvider = ({
         setItems((prev) => [...prev, item].filter((i) => i.id));
       });
 
-      socket.on("item:completed", (itemId: string) => {
+      socket.on("item:completed", (updatedItem: Item) => {
         setItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, completedAt: Date.now() } : item
-          )
+          prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
         );
       });
 
@@ -145,11 +152,20 @@ export const ShoppingListProvider = ({
       });
 
       socket.on("item:updated", (item: Item) => {
-        // todo show notification if item is recategorized by AI on server
         setItems((prev) =>
           prev.map((prevItem) =>
             prevItem.id === item.id ? { ...prevItem, ...item } : prevItem
           )
+        );
+      });
+
+      socket.on("item:error", (error: string) => {
+        dispatch(
+          addNotification({
+            message: `${error}`,
+            type: "error",
+            timeout: 5000,
+          })
         );
       });
     }
@@ -161,6 +177,7 @@ export const ShoppingListProvider = ({
       socket.removeAllListeners("item:uncompleted");
       socket.removeAllListeners("item:deleted");
       socket.removeAllListeners("item:updated");
+      socket.removeAllListeners("item:error");
       socket.offAny();
     }
 
@@ -172,7 +189,7 @@ export const ShoppingListProvider = ({
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, []);
+  }, [dispatch]);
 
   const addItem = async ({
     name,

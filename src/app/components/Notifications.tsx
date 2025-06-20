@@ -18,7 +18,9 @@ export default function Notifications() {
           className={cn(
             "z-50 pl-4 pr-2 py-2 rounded shadow-md transition-all flex gap-2 items-center text-sm pointer-events-auto",
             notification.type === "info" &&
-              "border border-slate-300 bg-slate-100/50 dark:bg-slate-800/50 dark:text-white"
+              "border border-slate-300 bg-slate-100/50 dark:bg-slate-800/50 dark:text-white",
+            notification.type === "error" &&
+              "border border-red-300 bg-red-100/50 dark:bg-red-800/50 dark:text-white"
           )}
         >
           <span>{notification.message}</span>

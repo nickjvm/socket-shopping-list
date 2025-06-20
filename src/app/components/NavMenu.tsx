@@ -5,8 +5,7 @@ import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 
-import { RxHamburgerMenu } from "react-icons/rx";
-import { IoCloseOutline } from "react-icons/io5";
+import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
 import { TbTrash } from "react-icons/tb";
 import { IoIosClose } from "react-icons/io";
 import { FiPlusSquare } from "react-icons/fi";
@@ -54,7 +53,7 @@ export default function NavMenu() {
           className="cursor-pointer mt-4 mr-4 p-2 absolute right-full hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
           {sidebarOpen ? (
-            <IoCloseOutline className="w-4 h-4" />
+            <RxCross1 className="w-4 h-4" />
           ) : (
             <RxHamburgerMenu className="w-4 h-4" />
           )}
@@ -126,6 +125,17 @@ export default function NavMenu() {
                 </button>
               </>
             )}
+          </div>
+          <div className="mt-auto border-t border-slate-300 dark:border-slate-700 px-2 py-2 -mb-4 dark:bg-slate-700 text-center text-sm">
+            Built with ❤️ by{" "}
+            <Link
+              href="https://github.com/nickjvm/socket-shopping-list"
+              className="font-bold hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @nickjvm
+            </Link>
           </div>
         </div>
       </div>

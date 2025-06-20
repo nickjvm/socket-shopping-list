@@ -59,7 +59,7 @@ export default function Item({ item, onExpand, index }: ItemProps) {
       setPendingCompletion(true);
       timeout.current = setTimeout(() => {
         completeItem(id);
-      }, 3000);
+      }, 2000);
     }
   };
 

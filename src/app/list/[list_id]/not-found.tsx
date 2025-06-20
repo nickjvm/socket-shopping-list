@@ -1,6 +1,20 @@
+"use client";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+
+import { remove } from "@/store/historySlice";
 
 export default function NotFound() {
+  const params = useParams();
+  const listId = params.list_id as string;
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(remove(listId));
+  }, [listId, dispatch]);
+
   return (
     <div className="h-full flex flex-col items-center justify-center space-y-4">
       <h2 className="font-bold text-xl">List Not Found</h2>

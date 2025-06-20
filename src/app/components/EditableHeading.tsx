@@ -12,25 +12,12 @@ export default function EditableHeading({
   className?: string;
 }) {
   const [editing, setEditing] = useState(false);
-  const inputRef = useRef<HTMLSpanElement>(null);
+  const inputRef = useRef<HTMLHeadingElement>(null);
   const textRef = useRef(text);
 
   const beginEditing = () => {
     if (editing) return; // Prevent re-entrance if already editing
     setEditing(true);
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        const range = document.createRange();
-        range.selectNodeContents(inputRef.current);
-        range.collapse(false);
-        const sel = window.getSelection();
-        if (sel) {
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-      }
-    }, 0);
   };
 
   const handleSubmit = (e: React.FocusEvent) => {
@@ -45,33 +32,33 @@ export default function EditableHeading({
   };
 
   return (
-    <button
-      onClick={beginEditing}
-      className="without-ring flex group items-center justify-start text-left cursor-pointer"
+    <h1
+      ref={inputRef}
+      contentEditable
+      role="textbox"
+      aria-multiline="true"
       aria-label="edit list name"
+      suppressContentEditableWarning
+      className={cn(
+        "text-2xl font-bold ml-1 px-2 py-1 -my-1 relative w-full",
+        className,
+        !editing && "line-clamp-1 pr-10 w-auto"
+      )}
+      onFocus={beginEditing}
+      onBlur={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          (e.target as HTMLSpanElement).blur();
+        }
+      }}
     >
-      <h1 className={cn("text-2xl font-bold ml-3", className)}>
-        <span
-          ref={inputRef}
-          contentEditable={editing}
-          suppressContentEditableWarning
-          className={cn("without-ring", !editing && "line-clamp-1")}
-          onBlur={handleSubmit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              (e.target as HTMLSpanElement).blur();
-            }
-          }}
-        >
-          {text}
-        </span>
-      </h1>
+      {text}
       {!editing && (
-        <span className="opacity-30 group-hover:opacity-100 transition-opacity px-2 py-1">
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-100 transition-opacity px-2 py-1 cursor-pointer">
           <MdModeEdit className="w-5 h-5" />
         </span>
       )}
-    </button>
+    </h1>
   );
 }

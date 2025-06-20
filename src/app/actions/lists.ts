@@ -1,7 +1,6 @@
 "use server";
 
 import { v4 as uuid } from "uuid";
-import { cookies } from "next/headers";
 
 import db from "@/db";
 import { items, lists } from "@/../drizzle/schema";
@@ -79,12 +78,6 @@ export async function fetchList(listId: string) {
     .where(eq(lists.id, listId));
 
   if (!results.length) {
-    const cookieStore = await cookies();
-    const historyCookie = cookieStore.get("history")?.value || "";
-    const updatedHistoryCookie = historyCookie
-      .split(",")
-      .filter((id) => id !== listId);
-    cookieStore.set("history", updatedHistoryCookie.join(","));
     notFound();
   }
   // Group items by list

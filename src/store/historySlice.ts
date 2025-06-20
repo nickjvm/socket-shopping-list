@@ -56,7 +56,9 @@ const historySlice = createSlice({
           .find((row) => row.startsWith(HISTORY_KEY + "="));
         const ids = match ? match.split("=")[1].split(",") : [];
         const newIds = ids.filter((id) => id !== action.payload);
-        document.cookie = `${HISTORY_KEY}=${newIds.join(",")}; path=/`;
+        document.cookie = `${HISTORY_KEY}=${newIds.join(
+          ","
+        )}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
       }
     },
     add(state, action: PayloadAction<ListHistoryItem>) {
@@ -75,7 +77,9 @@ const historySlice = createSlice({
           action.payload.id,
           ...ids.filter((id) => id !== action.payload.id),
         ];
-        document.cookie = `${HISTORY_KEY}=${newIds.join(",")}; path=/`;
+        document.cookie = `${HISTORY_KEY}=${newIds.join(
+          ","
+        )}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
       }
     },
   },

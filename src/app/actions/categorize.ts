@@ -10,7 +10,7 @@ const ShoppingListItem = z.object({
   category: z.string(),
 });
 
-export async function categorizeItem(item: string): Promise<string | null> {
+export async function categorizeItem(item: string): Promise<string> {
   const response = await openai.responses.parse({
     model: "gpt-4o-2024-08-06",
     input: [

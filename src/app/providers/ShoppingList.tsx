@@ -19,6 +19,7 @@ type ShoppingListContextType = {
   completeItem: (id: string) => void;
   uncompleteItem: (id: string) => void;
   setShowCompleted: (showCompleted: boolean) => void;
+  deleteCompletedItems: () => void;
   showCompleted: boolean;
 };
 
@@ -139,6 +140,10 @@ export const ShoppingListProvider = ({
         setItems((prev) => prev.filter((item) => item.id !== itemId));
       });
 
+      socket.on("items:deleted", (itemIds: string[]) => {
+        setItems((prev) => prev.filter((item) => !itemIds.includes(item.id)));
+      });
+
       socket.on("item:updated", (item: Item) => {
         // todo show notification if item is recategorized by AI on server
         setItems((prev) =>
@@ -181,7 +186,10 @@ export const ShoppingListProvider = ({
       quantity: quantity || 1,
       details: details || "",
     };
-    setItems((prev) => [...prev, newItem as Item]);
+    setItems((prev) => [
+      ...prev,
+      { ...newItem, category: category || "Other" } as Item,
+    ]);
     socket.emit("item:add", newItem);
   };
 
@@ -198,7 +206,26 @@ export const ShoppingListProvider = ({
     );
   };
 
+  const deleteCompletedItems = () => {
+    const completedItems = items.filter((item) => item.completedAt);
+    if (completedItems.length === 0) {
+      return;
+    }
+
+    socket.emit("items:delete", {
+      listId: listId.current,
+      itemIds: completedItems.map((i) => i.id),
+    });
+  };
+
   const updateItem = (item: Item) => {
+    setItems(() => {
+      return items.map((prevItem) =>
+        prevItem.id === item.id
+          ? { ...prevItem, ...item, id: item.id }
+          : prevItem
+      );
+    });
     socket.emit("item:update", item);
   };
 
@@ -227,6 +254,7 @@ export const ShoppingListProvider = ({
         uncompleteItem,
         updateItem,
         setShowCompleted,
+        deleteCompletedItems,
         showCompleted,
       }}
     >

@@ -18,23 +18,20 @@ const initialState: HistoryState = {
   pending: true,
 };
 
-// Async thunk to fetch history from cookies and server
+// Async thunk to fetch history from client cookies
 export const getHistory = createAsyncThunk<
   ListHistoryItem[],
   { cookieValue?: string } | undefined
->("history/getHistory", async ({ cookieValue } = {}) => {
-  // On server, pass cookieValue from server context
-  // On client, cookieValue is undefined, so read from document.cookie
-  let ids: string[] = [];
-  if (typeof window === "undefined") {
-    ids = cookieValue ? cookieValue.split(",") : [];
-  } else {
-    const match = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(HISTORY_KEY + "="));
-    ids = match ? match.split("=")[1].split(",") : [];
+>("history/getHistory", async () => {
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(HISTORY_KEY + "="));
+  const ids = match ? match.split("=")[1].split(",") : [];
+
+  if (!ids.length) {
+    return [];
   }
-  if (!ids.length) return [];
+
   const lists = await fetchLists(ids);
   return ids
     .map((id) => {

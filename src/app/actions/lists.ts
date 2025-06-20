@@ -1,21 +1,34 @@
 "use server";
 
 import { v4 as uuid } from "uuid";
+import { cookies } from "next/headers";
 
 import db from "@/db";
 import { items, lists } from "@/../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
-export type Response<T> = {
-  status: number;
-  message: string;
-  data?: T;
-};
+export type Response<T> =
+  | {
+      status: 200;
+      message: string;
+      data: T;
+    }
+  | {
+      status: 400;
+      message: string;
+      errors: Record<string, string>;
+    };
 export async function createList(formData: FormData): Promise<Response<List>> {
   const name = (formData.get("name") as string)?.trim();
   if (!name) {
-    throw new Error("List name is required");
+    return {
+      status: 400,
+      message: "List not created",
+      errors: {
+        name: "List name is required",
+      },
+    };
   }
   const id = uuid();
   const list = await db
@@ -66,6 +79,12 @@ export async function fetchList(listId: string) {
     .where(eq(lists.id, listId));
 
   if (!results.length) {
+    const cookieStore = await cookies();
+    const historyCookie = cookieStore.get("history")?.value || "";
+    const updatedHistoryCookie = historyCookie
+      .split(",")
+      .filter((id) => id !== listId);
+    cookieStore.set("history", updatedHistoryCookie.join(","));
     notFound();
   }
   // Group items by list

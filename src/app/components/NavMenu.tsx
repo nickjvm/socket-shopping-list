@@ -3,10 +3,11 @@
 import { useEffect } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoCloseOutline } from "react-icons/io5";
-
-import { useDispatch, useSelector } from "react-redux";
+import { TbTrash } from "react-icons/tb";
 import { IoIosClose } from "react-icons/io";
 import { FiPlusSquare } from "react-icons/fi";
 import { LuEye, LuEyeOff } from "react-icons/lu";
@@ -22,7 +23,8 @@ import ThemeSwitch from "./ThemeSwitch";
 export default function NavMenu() {
   const pathname = usePathname();
   const params = useParams();
-  const { showCompleted, setShowCompleted } = useShoppingList();
+  const { showCompleted, setShowCompleted, deleteCompletedItems } =
+    useShoppingList();
   const sidebarOpen = useSelector(
     (state: RootState) => state.layout.sidebarOpen
   );
@@ -76,7 +78,7 @@ export default function NavMenu() {
                       {list.name}
                     </Link>
                     <button
-                      className="opacity-0 group-hover:opacity-100 transition-all text-slate-400 cursor-pointer hover:text-slate-800 "
+                      className="opacity-50 group-hover:opacity-100 transition-all text-slate-400 cursor-pointer hover:text-slate-800 "
                       onClick={() => dispatch(remove(list.id))}
                     >
                       <IoIosClose className="w-6 h-6" />
@@ -100,16 +102,30 @@ export default function NavMenu() {
                 dispatch(setSidebarOpen(false));
               }}
             />
-            <button
-              onClick={() => {
-                setShowCompleted(!showCompleted);
-                dispatch(setSidebarOpen(false));
-              }}
-              className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 hover:bg-white dark:hover:bg-slate-600 transition-colors"
-            >
-              {showCompleted ? <LuEyeOff /> : <LuEye />}
-              {showCompleted ? "Hide" : "Show"} Completed
-            </button>
+            {params.list_id && (
+              <>
+                <button
+                  onClick={() => {
+                    setShowCompleted(!showCompleted);
+                    dispatch(setSidebarOpen(false));
+                  }}
+                  className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 hover:bg-white dark:hover:bg-slate-600 transition-colors"
+                >
+                  {showCompleted ? <LuEyeOff /> : <LuEye />}
+                  {showCompleted ? "Hide" : "Show"} Completed
+                </button>
+
+                <button
+                  onClick={() => {
+                    deleteCompletedItems();
+                    dispatch(setSidebarOpen(false));
+                  }}
+                  className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 hover:bg-white dark:hover:bg-slate-600 transition-colors"
+                >
+                  <TbTrash /> Delete Completed
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

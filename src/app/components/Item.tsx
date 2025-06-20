@@ -125,6 +125,9 @@ export default function Item({ item, onExpand, index }: ItemProps) {
             <div className="flex items-center gap-1 flex-nowrap w-full">
               <div
                 contentEditable
+                role="textbox"
+                tabIndex={0}
+                aria-label="Item name"
                 suppressContentEditableWarning
                 data-quantity={item.quantity > 1 ? ` x${item.quantity}` : ""}
                 className="min-w-[100px] focus:ring-0 focus:ring-offset-0 focus:outline-none w-full after:content-[attr(data-quantity)] after:text-gray-500 after:dark:text-gray-400"
@@ -158,6 +161,10 @@ export default function Item({ item, onExpand, index }: ItemProps) {
               <div
                 contentEditable
                 spellCheck="false"
+                role="textbox"
+                aria-multiline="true"
+                tabIndex={0}
+                aria-label="Item details"
                 suppressContentEditableWarning
                 className=" text-gray-500 placeholder-gray-500 placeholder:not-italic text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none w-full resize-none"
                 onFocus={(e) => {

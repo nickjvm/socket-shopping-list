@@ -27,3 +27,15 @@ type ClientItem = Omit<
 >;
 
 type PartialWithRequired<T, K extends keyof T> = Pick<T, K> & Partial<T>;
+
+type FormState =
+  | {
+      type: "error";
+      message: string;
+      errors: Record<string, string>;
+    }
+  | {
+      type: "success";
+      message: string;
+    }
+  | null;

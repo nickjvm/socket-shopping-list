@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useActionState } from "react";
 import { TbWindowMaximize } from "react-icons/tb";
 import { FiShare } from "react-icons/fi";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
@@ -180,6 +180,19 @@ export default function ListPage({ list }: ListPageProps) {
     }
   };
   const onDragUpdate = () => {};
+
+  const handleSubmit = async (_: null | void, data: FormData) => {
+    const itemName = data.get("item") as string;
+    if (itemName.trim() !== "") {
+      addItem({ name: itemName });
+    }
+  };
+
+  const [, formAction] = useActionState<void | null, FormData>(
+    handleSubmit,
+    null
+  );
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center p-4 pr-14  border-b border-slate-300 dark:border-slate-700">
@@ -230,18 +243,12 @@ export default function ListPage({ list }: ListPageProps) {
       </DragDropContext>
       <form
         className="mt-auto gap-2 flex p-4 border-t border-slate-300"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const itemName = formData.get("item") as string;
-          if (!itemName) return;
-          addItem({ name: itemName });
-          (e.target as HTMLFormElement).reset();
-        }}
+        action={formAction}
       >
         <Input
           type="text"
           name="item"
+          required
           spellCheck="false"
           label="Add an item"
           autoCorrect="off"

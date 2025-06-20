@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { v4 as uuid } from "uuid";
-import { eq, inArray, sql, SQL } from "drizzle-orm";
+import { and, eq, inArray, sql, SQL } from "drizzle-orm";
 
 import db from "./src/db/index.js";
 import { items } from "./drizzle/schema.js";
@@ -120,7 +120,24 @@ app.prepare().then(() => {
       io.to(room).emit("item:updated", item);
     });
 
+    socket.on("items:delete", async ({ listId, itemIds }) => {
+      if (!listId || !itemIds || itemIds.length === 0) {
+        return;
+      }
+
+      await db
+        .delete(items)
+        .where(and(inArray(items.id, itemIds), eq(items.listId, listId)));
+
+      io.to(room).emit("items:deleted", itemIds);
+    });
+
     socket.on("item:add", async ({ name, category, quantity, details }) => {
+      if (!name || name.trim() === "") {
+        socket.emit("item:error", "Item name is required");
+        return;
+      }
+
       const rows = await db
         .insert(items)
         .values({
@@ -139,7 +156,9 @@ app.prepare().then(() => {
       setTimeout(() => {
         socket.emit("item:highlight", rows[0].id);
       }, 250);
-      if (category) return;
+      if (category) {
+        return;
+      }
       import("./src/app/actions/example.js").then(
         async ({ categorizeItem }) => {
           const category = await categorizeItem(name);

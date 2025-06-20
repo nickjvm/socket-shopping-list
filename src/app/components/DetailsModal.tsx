@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useActionState, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import { TbTrash } from "react-icons/tb";
 
@@ -17,6 +17,64 @@ export type DetailsModalProps = {
 
 const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
   const { addItem, updateItem, removeItem } = useShoppingList();
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  const handleSubmit = (
+    _: FormState | undefined,
+    formData: FormData
+  ): FormState => {
+    const itemName = formData.get("item") as string;
+    if (!itemName) {
+      return {
+        type: "error",
+        message: "Item name is required",
+        errors: { item: "Item name cannot be empty" },
+      };
+    }
+
+    if (data.mode === "edit") {
+      // If editing, we assume the item already exists and we just update it
+      updateItem({
+        ...data.item,
+        name: itemName,
+        category: formData.get("category") as string,
+        quantity: parseInt(formData.get("quantity") as string, 10) || 1,
+        details: formData.get("details") as string,
+      });
+    } else {
+      addItem({
+        name: itemName,
+        category: formData.get("category") as string,
+        quantity: parseInt(formData.get("quantity") as string, 10) || 1,
+        details: formData.get("details") as string,
+      });
+    }
+
+    return {
+      type: "success",
+      message:
+        data.mode === "edit"
+          ? "Item updated successfully"
+          : "Item added successfully",
+    };
+  };
+
+  const [state, submitAction, isPending] = useActionState<FormState, FormData>(
+    handleSubmit,
+    null
+  );
+
+  useEffect(() => {
+    if (isPending) {
+      setErrors({});
+    } else if (state?.type === "success") {
+      setErrors({});
+      onClose();
+    } else if (state?.type === "error") {
+      setErrors(state.errors);
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [state, isPending]);
 
   if (!data) {
     return null;
@@ -44,37 +102,12 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ data, onClose }) => {
           </button>
         </div>
 
-        <form
-          className="mt-auto grid gap-2 gap-y-3"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const itemName = formData.get("item") as string;
-            if (!itemName) return;
-
-            if (data.mode === "edit") {
-              // If editing, we assume the item already exists and we just update it
-              updateItem({
-                ...data.item,
-                name: itemName,
-                category: formData.get("category") as string,
-                quantity: parseInt(formData.get("quantity") as string, 10) || 1,
-                details: formData.get("details") as string,
-              });
-            } else {
-              addItem({
-                name: itemName,
-                category: formData.get("category") as string,
-                quantity: parseInt(formData.get("quantity") as string, 10) || 1,
-                details: formData.get("details") as string,
-              });
-            }
-            onClose();
-          }}
-        >
+        <form className="mt-auto grid gap-2 gap-y-3" action={submitAction}>
           <div className="flex gap-2">
             <Input
+              required
               label="Item Name"
+              error={errors?.item}
               type="text"
               name="item"
               id="item"

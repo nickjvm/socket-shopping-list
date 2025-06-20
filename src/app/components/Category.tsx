@@ -3,7 +3,7 @@ import { useShoppingList } from "@/app/providers/ShoppingList";
 import Item from "@/app/components/Item";
 import { Droppable } from "@hello-pangea/dnd";
 import Input from "./Input";
-import { useRef } from "react";
+import { useActionState, useRef } from "react";
 
 type CategoryProps = {
   category: Category;
@@ -18,6 +18,30 @@ export default function Category({ setModalContext, category }: CategoryProps) {
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (_: FormState, formData: FormData): FormState => {
+    const itemName = formData.get(`new-${category.name}-item`) as string;
+    if (!itemName) {
+      return {
+        type: "error",
+        message: "Item name is required",
+        errors: { [`new-${category.name}-item`]: "Item name cannot be empty" },
+      };
+    }
+
+    addItem({ name: itemName, category: category.name });
+    inputRef.current?.form?.reset();
+
+    return {
+      type: "success",
+      message: `Item added to ${category.name}`,
+    };
+  };
+
+  const [, formAction] = useActionState<FormState, FormData>(
+    handleSubmit,
+    null
+  );
 
   return (
     <li className="-mx-4 px-4 border-b border-slate-300 pb-2 dark:border-slate-700 last:border-0">
@@ -50,18 +74,7 @@ export default function Category({ setModalContext, category }: CategoryProps) {
           className="w-5 h-5 border border-slate-400 dark:border-slate-600 border-dashed rounded-full cursor-default"
           onClick={() => inputRef.current?.focus()}
         ></span>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const itemName = formData.get(
-              `new-${category.name}-item`
-            ) as string;
-            if (!itemName) return;
-            addItem({ name: itemName, category: category.name });
-            (e.target as HTMLFormElement).reset();
-          }}
-        >
+        <form action={formAction}>
           <Input
             ref={inputRef}
             type="text"

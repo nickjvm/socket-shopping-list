@@ -89,10 +89,7 @@ export const ShoppingListProvider = ({
 
   const data: ShoppingListData = {
     categories: CATEGORIES.filter((c) =>
-      items.some(
-        (item) =>
-          item.category === c && (showCompleted ? true : !item.completedAt)
-      )
+      items.some((item) => item.category === c)
     ).map((c) => ({
       id: c,
       name: c,

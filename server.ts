@@ -6,6 +6,7 @@ import { and, eq, inArray, sql, SQL } from "drizzle-orm";
 
 import db from "./src/db/index.js";
 import { items } from "./drizzle/schema.js";
+import { categorizeItem } from "./src/app/actions/categorize.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = dev ? "localhost" : "0.0.0.0";
@@ -92,15 +93,15 @@ app.prepare().then(() => {
     );
     socket.on("item:complete", async (itemId) => {
       try {
-        const [maxIndexRow] = await db
-          .select({ maxIndex: sql`max(${items.index})` })
-          .from(items)
-          .where(eq(items.listId, room));
+        // const [maxIndexRow] = await db
+        //   .select({ maxIndex: sql`max(${items.index})` })
+        //   .from(items)
+        //   .where(eq(items.listId, room));
         const item = await db
           .update(items)
           .set({
             completedAt: Date.now(),
-            index: (maxIndexRow.maxIndex as number) + 1,
+            // index: (maxIndexRow.maxIndex as number) + 1,
           })
           .where(eq(items.id, itemId))
           .returning();
@@ -205,33 +206,25 @@ app.prepare().then(() => {
           return;
         }
 
-        import("./src/app/actions/categorize.js").then(
-          async ({ categorizeItem }) => {
-            const category = await categorizeItem(name);
+        const aiCategory = await categorizeItem(name);
 
-            if (category === "Other") {
-              return;
-            }
+        if (aiCategory === "Other") {
+          return;
+        }
 
-            try {
-              await db
-                .update(items)
-                .set({ category })
-                .where(eq(items.id, rows[0].id));
+        await db
+          .update(items)
+          .set({ category: aiCategory })
+          .where(eq(items.id, rows[0].id));
 
-              io.emit("item:updated", {
-                ...rows[0],
-                category,
-              });
-              socket.emit("item:categorized", {
-                id: rows[0].id,
-                category,
-              });
-            } catch (error) {
-              console.error("Error categorizing item:", error);
-            }
-          }
-        );
+        io.emit("item:updated", {
+          ...rows[0],
+          category: aiCategory,
+        });
+        socket.emit("item:categorized", {
+          id: rows[0].id,
+          category: aiCategory,
+        });
       } catch (error) {
         console.error("Error adding item:", error);
         socket.emit("item:error", "Unable to add item");

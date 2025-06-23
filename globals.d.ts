@@ -39,3 +39,15 @@ type FormState =
       message: string;
     }
   | null;
+
+type ApiResponse<T> =
+  | {
+      status: 200;
+      message: string;
+      data: T;
+    }
+  | {
+      status: 400 | 500;
+      message: string;
+      errors: Record<string, string>;
+    };

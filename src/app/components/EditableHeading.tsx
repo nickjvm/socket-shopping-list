@@ -42,7 +42,7 @@ export default function EditableHeading({
       className={cn(
         "text-2xl font-bold ml-1 px-2 py-1 -my-1 relative w-full",
         className,
-        !editing && "line-clamp-1 pr-10 w-auto"
+        !editing && "line-clamp-1 pr-10 w-auto cursor-pointer"
       )}
       onFocus={beginEditing}
       onBlur={handleSubmit}
@@ -55,7 +55,7 @@ export default function EditableHeading({
     >
       {text}
       {!editing && (
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-100 transition-opacity px-2 py-1 cursor-pointer">
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-100 transition-opacity px-2 py-1 pointer-events-none">
           <MdModeEdit className="w-5 h-5" />
         </span>
       )}

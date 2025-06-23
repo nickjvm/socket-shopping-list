@@ -9,18 +9,22 @@ import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
 import { TbTrash } from "react-icons/tb";
 import { IoIosClose } from "react-icons/io";
 import { FiPlusSquare } from "react-icons/fi";
-import { LuEye, LuEyeOff } from "react-icons/lu";
+import { LuEye, LuEyeOff, LuListCheck } from "react-icons/lu";
 
 import cn from "@/utils/cn";
 import { AppDispatch, RootState } from "@/store";
 import { getHistory, remove } from "@/store/historySlice";
 import { setSidebarOpen, toggleSidebar } from "@/store/layoutSlice";
 import { useShoppingList } from "@/app/providers/ShoppingList";
+import { useModal } from "@/app/providers/ModalProvider";
 
 import ThemeSwitch from "./ThemeSwitch";
+import RecentlyCompleted from "./RecentlyCompleted";
 
 export default function NavMenu() {
   const pathname = usePathname();
+  const { openModal } = useModal();
+
   const params = useParams();
   const { showCompleted, setShowCompleted, deleteCompletedItems } =
     useShoppingList();
@@ -113,7 +117,15 @@ export default function NavMenu() {
                   {showCompleted ? <LuEyeOff /> : <LuEye />}
                   {showCompleted ? "Hide" : "Show"} Completed
                 </button>
-
+                <button
+                  className="cursor-pointer group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 hover:bg-white dark:hover:bg-slate-600 transition-colors"
+                  onClick={() => {
+                    dispatch(setSidebarOpen(false));
+                    openModal("Recently Completed", <RecentlyCompleted />);
+                  }}
+                >
+                  <LuListCheck /> Recently Completed
+                </button>
                 <button
                   onClick={() => {
                     deleteCompletedItems();

@@ -7,18 +7,9 @@ import { items, lists } from "@/../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
-export type Response<T> =
-  | {
-      status: 200;
-      message: string;
-      data: T;
-    }
-  | {
-      status: 400;
-      message: string;
-      errors: Record<string, string>;
-    };
-export async function createList(formData: FormData): Promise<Response<List>> {
+export async function createList(
+  formData: FormData
+): Promise<ApiResponse<List>> {
   const name = (formData.get("name") as string)?.trim();
   if (!name) {
     return {
@@ -48,7 +39,7 @@ export async function createList(formData: FormData): Promise<Response<List>> {
 export async function renameList(
   listId: string,
   name: string
-): Promise<Response<List>> {
+): Promise<ApiResponse<List>> {
   if (!name && !name.trim()) {
     throw new Error("List name is required");
   }

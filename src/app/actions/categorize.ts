@@ -12,7 +12,7 @@ const ShoppingListItem = z.object({
 
 export async function categorizeItem(item: string): Promise<string> {
   const response = await openai.responses.parse({
-    model: "gpt-4o-2024-08-06",
+    model: "gpt-4.1-nano-2025-04-14",
     input: [
       {
         role: "system",

@@ -1,20 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { Draggable } from "@hello-pangea/dnd";
 import { IoIosCheckmark, IoIosInformationCircleOutline } from "react-icons/io";
-import { RxDragHandleDots2 } from "react-icons/rx";
-
-import cn from "@/utils/cn";
+import { useShoppingList } from "../providers/ShoppingList";
 import { socket } from "@/socket";
+import { RxDragHandleDots2 } from "react-icons/rx";
+import cn from "@/utils/cn";
+import { DraggableProvided } from "@hello-pangea/dnd";
 
-import { useShoppingList } from "@/app/providers/ShoppingList";
-
-type ItemProps = {
-  item: Item;
-  onExpand: (item: Item) => void;
-  index: number;
-};
-
-export default function Item({ item, onExpand, index }: ItemProps) {
+type ItemProps =
+  | {
+      isDraggable: true;
+      item: Item;
+      onExpand?: (item: Item) => void;
+      provided: DraggableProvided;
+    }
+  | {
+      isDraggable?: false;
+      item: Item;
+      onExpand?: (item: Item) => void;
+      provided?: undefined;
+    };
+export default function Item({
+  item,
+  onExpand,
+  provided,
+  isDraggable,
+}: ItemProps) {
   const [isPendingCompletion, setPendingCompletion] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const { completeItem, uncompleteItem, updateItem } = useShoppingList();
@@ -72,140 +82,135 @@ export default function Item({ item, onExpand, index }: ItemProps) {
   }, [completedAt]);
 
   return (
-    <Draggable
-      draggableId={item.id || index + ""}
-      index={index}
-      key={id || index}
+    <li
+      {...(isDraggable && provided ? provided.draggableProps : {})}
+      ref={(el) => {
+        itemRef.current = el;
+        provided?.innerRef(el);
+      }}
+      className={cn(
+        isPendingCompletion && "opacity-50",
+        completedAt && "opacity-50 line-through italic",
+        "flex gap-2 py-1 group items-start"
+      )}
     >
-      {(provided) => (
-        <li
-          {...provided.draggableProps}
-          ref={(el) => {
-            itemRef.current = el;
-            provided.innerRef(el);
-          }}
+      {!!isDraggable && (
+        <div
+          {...provided.dragHandleProps}
           className={cn(
-            isPendingCompletion && "opacity-50",
-            completedAt && "opacity-50 line-through italic",
-            "flex gap-2 py-1 group items-start"
+            "-ml-3 opacity-30  group-hover:opacity-100 transition-opacity mt-1"
           )}
         >
-          <div
-            {...provided.dragHandleProps}
-            className={cn(
-              "-ml-3 opacity-30  group-hover:opacity-100 transition-opacity mt-1"
-            )}
-          >
-            <RxDragHandleDots2 />
-          </div>
-          <label className="min-w-5 h-5 cursor-pointer mt-[1.5px]">
-            <div
-              className={cn(
-                "rounded-full border border-slate-600 w-5 h-5 relative bg-white dark:bg-slate-900",
-                checked &&
-                  "bg-slate-900 border-slate-900 text-white dark:bg-white dark:text-slate-800 dark:border-white"
-              )}
-            >
-              {checked && (
-                <IoIosCheckmark className=" w-7 h-7 absolute top-1/2 left-1/2 -translate-1/2" />
-              )}
-            </div>
-            <span className="sr-only">
-              <input
-                type="checkbox"
-                name={id}
-                onChange={handleToggle}
-                className="mt-[5px] hidden"
-                checked={checked}
-              />
-              Mark {name} completed
-            </span>
-          </label>
-          <div className="grow flex gap-x-1 flex-wrap">
-            <div className="flex items-center gap-1 flex-nowrap w-full">
-              <div
-                contentEditable
-                role="textbox"
-                tabIndex={0}
-                aria-label="Item name"
-                suppressContentEditableWarning
-                data-quantity={item.quantity > 1 ? ` x${item.quantity}` : ""}
-                className="min-w-[100px] focus:ring-0 focus:ring-offset-0 focus:outline-none w-full after:content-[attr(data-quantity)] after:text-gray-500 after:dark:text-gray-400"
-                autoCorrect="off"
-                onFocus={() => {
-                  setIsFocused(true);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    (e.target as HTMLDivElement).blur();
-                  }
-                }}
-                onBlur={(e) => {
-                  if (e.target.textContent !== name) {
-                    updateItem({
-                      ...item,
-                      name:
-                        (e.target as HTMLDivElement).textContent?.trim() || "",
-                    });
-                  }
-                  if (!itemRef.current?.contains(e.relatedTarget)) {
-                    setIsFocused(false);
-                  }
-                }}
-              >
-                {name}
-              </div>
-            </div>
-            {(item.details || isFocused) && (
-              <div
-                contentEditable
-                spellCheck="false"
-                role="textbox"
-                aria-multiline="true"
-                tabIndex={0}
-                aria-label="Item details"
-                suppressContentEditableWarning
-                className=" text-gray-500 placeholder-gray-500 placeholder:not-italic text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none w-full resize-none"
-                onFocus={(e) => {
-                  setIsFocused(true);
-                  if (e.target.textContent === "Add a note...") {
-                    e.target.textContent = "";
-                  }
-                }}
-                onBlur={(e) => {
-                  if (!itemRef.current?.contains(e.relatedTarget)) {
-                    setIsFocused(false);
-                  }
-                  if (item.details !== e.target.textContent) {
-                    updateItem({
-                      ...item,
-                      details: e.target.textContent,
-                    });
-                  }
-                  if (e.target.textContent === "") {
-                    e.target.textContent = "Add a note...";
-                  }
-                }}
-              >
-                {item.details || "Add a note..."}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => {
-              onExpand(item);
-              setIsFocused(false);
-            }}
-            className={cn(
-              "cursor-pointer opacity-20 group-hover:opacity-100 transition-opacity",
-              isFocused && "opacity-100"
-            )}
-          >
-            <IoIosInformationCircleOutline className="w-5 h-5" />
-          </button>
-        </li>
+          <RxDragHandleDots2 />
+        </div>
       )}
-    </Draggable>
+      <label className="min-w-5 h-5 cursor-pointer mt-[1.5px]">
+        <div
+          className={cn(
+            "rounded-full border border-slate-600 w-5 h-5 relative bg-white dark:bg-slate-900",
+            checked &&
+              "bg-slate-900 border-slate-900 text-white dark:bg-white dark:text-slate-800 dark:border-white"
+          )}
+        >
+          {checked && (
+            <IoIosCheckmark className=" w-7 h-7 absolute top-1/2 left-1/2 -translate-1/2" />
+          )}
+        </div>
+        <span className="sr-only">
+          <input
+            type="checkbox"
+            name={id}
+            onChange={handleToggle}
+            className="mt-[5px] hidden"
+            checked={checked}
+          />
+          Mark {name} completed
+        </span>
+      </label>
+      <div className="grow flex gap-x-1 flex-wrap">
+        <div className="flex items-center gap-1 flex-nowrap w-full">
+          <div
+            contentEditable
+            role="textbox"
+            tabIndex={0}
+            aria-label="Item name"
+            suppressContentEditableWarning
+            data-quantity={item.quantity > 1 ? ` x${item.quantity}` : ""}
+            className="min-w-[100px] focus:ring-0 focus:ring-offset-0 focus:outline-none w-full after:content-[attr(data-quantity)] after:text-gray-500 after:dark:text-gray-400"
+            autoCorrect="off"
+            onFocus={() => {
+              setIsFocused(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                (e.target as HTMLDivElement).blur();
+              }
+            }}
+            onBlur={(e) => {
+              if (e.target.textContent !== name) {
+                updateItem({
+                  ...item,
+                  name: (e.target as HTMLDivElement).textContent?.trim() || "",
+                });
+              }
+              if (!itemRef.current?.contains(e.relatedTarget)) {
+                setIsFocused(false);
+              }
+            }}
+          >
+            {name}
+          </div>
+        </div>
+        {(item.details || isFocused) && (
+          <div
+            contentEditable
+            spellCheck="false"
+            role="textbox"
+            aria-multiline="true"
+            tabIndex={0}
+            aria-label="Item details"
+            suppressContentEditableWarning
+            className=" text-gray-500 placeholder-gray-500 placeholder:not-italic text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none w-full resize-none"
+            onFocus={(e) => {
+              setIsFocused(true);
+              if (e.target.textContent === "Add a note...") {
+                e.target.textContent = "";
+              }
+            }}
+            onBlur={(e) => {
+              if (!itemRef.current?.contains(e.relatedTarget)) {
+                setIsFocused(false);
+              }
+              if (item.details !== e.target.textContent) {
+                updateItem({
+                  ...item,
+                  details: e.target.textContent,
+                });
+              }
+              if (e.target.textContent === "") {
+                e.target.textContent = "Add a note...";
+              }
+            }}
+          >
+            {item.details || "Add a note..."}
+          </div>
+        )}
+      </div>
+      {onExpand && (
+        <button
+          onClick={() => {
+            onExpand(item);
+            setIsFocused(false);
+          }}
+          className={cn(
+            "cursor-pointer opacity-20 group-hover:opacity-100 transition-opacity",
+            isFocused && "opacity-100"
+          )}
+        >
+          <IoIosInformationCircleOutline className="w-5 h-5" />
+        </button>
+      )}
+    </li>
   );
 }

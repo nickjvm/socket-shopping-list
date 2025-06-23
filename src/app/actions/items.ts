@@ -15,7 +15,7 @@ export const fetchRecentlyCompletedItems = async (
         and(
           eq(items.listId, listId),
           not(isNull(items.completedAt)),
-          gt(items.completedAt, Date.now() - 60 * 60 * 1000)
+          gt(items.completedAt, Date.now() - 60 * 60 * 1000 * 3)
         )
       )
       .orderBy(desc(items.completedAt));

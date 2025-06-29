@@ -36,4 +36,4 @@ COPY --from=builder ./app ./
 EXPOSE 3000
 
 # Start the application using ts-node with ESM loader
-CMD ["node", "--loader", "ts-node/esm", "server.ts"]
+CMD ["npm", "run", "start"]

@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "nodemon --exec node --loader ts-node/esm server.ts",
     "build": "next build",
-    "start": "node --loader ts-node/esm server.ts",
+    "start": "NODE_ENV=production node --loader ts-node/esm server.ts",
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
